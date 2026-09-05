@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizador de Grasa Corporal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --card: #181c24;
+    --border: #252a35;
+    --accent: #ff5c35;
+    --accent2: #ffb347;
+    --accent3: #4ecdc4;
+    --text: #eef0f4;
+    --muted: #6b7280;
+    --low: #4ecdc4;
+    --medium: #ffb347;
+    --high: #ff5c35;
+    --critical: #ff1744;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(255,92,53,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; left: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(78,205,196,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    text-align: center;
+    padding: 48px 24px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  header p {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,92,53,0.12);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #ff8c42);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    margin-top: 8px;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,92,53,0.35);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  /* Silhouette Section */
+  .silhouette-card {
+    position: relative;
+    min-height: 500px;
+  }
+
+  .silhouette-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+    position: relative;
+  }
+
+  #bodySvg {
+    width: 220px;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+    transition: all 0.3s;
+  }
+
+  /* Fat zones - by default invisible */
+  .fat-zone {
+    opacity: 0;
+    transition: opacity 0.6s ease, fill 0.6s ease;
+  }
+
+  .fat-zone.active-low    { opacity: 0.35; fill: var(--low); }
+  .fat-zone.active-medium { opacity: 0.55; fill: var(--medium); }
+  .fat-zone.active-high   { opacity: 0.75; fill: var(--high); }
+  .fat-zone.active-critical { opacity: 0.9; fill: var(--critical); animation: pulse-zone 1.5s ease-in-out infinite; }
+
+  @keyframes pulse-zone {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    justify-content: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* Results */
+  .results-section {
+    margin-top: 24px;
+    display: none;
+    animation: fadeUp 0.5s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-section.visible { display: block; }
+
+  .result-main {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .result-pct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    transition: color 0.5s;
+  }
+
+  .result-label {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .result-category {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    margin-top: 8px;
+  }
+
+  .zone-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .zone-item {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.3s;
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  .zone-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .zone-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .zone-info { flex: 1; }
+  .zone-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+  }
+
+  .zone-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .zone-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .badge-low { background: rgba(78,205,196,0.15); color: var(--low); }
+  .badge-medium { background: rgba(255,179,71,0.15); color: var(--medium); }
+  .badge-high { background: rgba(255,92,53,0.2); color: var(--high); }
+  .badge-critical { background: rgba(255,23,68,0.2); color: var(--critical); }
+
+  .bmi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .mini-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .mini-stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  .mini-stat-lbl {
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .tip-box {
+    background: linear-gradient(135deg, rgba(255,92,53,0.08), rgba(255,179,71,0.06));
+    border: 1px solid rgba(255,92,53,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #c8cbd4;
+  }
+
+  .tip-box strong { color: var(--accent2); }
+
+  .progress-bar-wrap {
+    background: var(--surface);
+    border-radius: 99px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 1s ease, background 0.5s;
+  }
+
+  select option { background: #1a1e27; }
+
+  .measure-hint {
+    background: rgba(78,205,196,0.05);
+    border: 1px solid rgba(78,205,196,0.15);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    font-size: 0.78rem;
+    color: var(--accent3);
+    line-height: 1.5;
+  }
+
+  .measure-hint strong { display: block; margin-bottom: 4px; font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>BODY FAT ANALYZER</h1>
+  <p>Análisis de composición corporal y zonas de acumulación de grasa</p>
+</header>
+
+<div class="container">
+  <div class="main-grid">
+
+    <!-- FORM CARD -->
+    <div class="card">
+      <div class="card-title">Tus Medidas</div>
+
+      <div class="measure-hint">
+        <strong>📏 Cómo medir correctamente</strong>
+        Usa una cinta métrica flexible. Mide en cm sin apretar. Cintura: parte más estrecha del torso. Cadera: parte más ancha. Cuello: debajo de la nuez.
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Sexo</label>
+          <select id="sex">
+            <option value="male">Masculino</option>
+            <option value="female">Femenino</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Edad</label>
+          <input type="number" id="age" placeholder="años" min="10" max="100">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Peso (kg)</label>
+          <input type="number" id="weight" placeholder="70" min="30" max="300" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Estatura (cm)</label>
+          <input type="number" id="height" placeholder="170" min="100" max="250">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cintura (cm)</label>
+          <input type="number" id="waist" placeholder="82" min="40" max="200" step="0.1">
+          <div class="hint">Al nivel del ombligo</div>
+        </div>
+        <div class="form-group">
+          <label>Cuello (cm)</label>
+          <input type="number" id="neck" placeholder="38" min="20" max="80" step="0.1">
+          <div class="hint">Debajo de la nuez</div>
+        </div>
+      </div>
+
+      <div class="form-group" id="hip-group">
+        <label>Cadera (cm)</label>
+        <input type="number" id="hip" placeholder="98" min="50" max="200" step="0.1">
+        <div class="hint">Parte más ancha</div>
+      </div>
+
+      <div class="form-group">
+        <label>Circunferencia de Brazo (cm) — opcional</label>
+        <input type="number" id="arm" placeholder="32" min="15" max="60" step="0.1">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Muslo (cm) — opcional</label>
+          <input type="number" id="thigh" placeholder="55" min="20" max="100" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Abdomen bajo (cm) — opcional</label>
+          <input type="number" id="abdomen" placeholder="90" min="40" max="200" step="0.1">
+        </div>
+      </div>
+
+      <button class="btn" onclick="analyze()">ANALIZAR COMPOSICIÓN</button>
+    </div>
+
+    <!-- SILHOUETTE + RESULTS -->
+    <div>
+      <div class="card silhouette-card">
+        <div class="card-title">Mapa Corporal</div>
+
+        <div class="silhouette-wrap">
+          <svg id="bodySvg" viewBox="0 0 200 500" xmlns="http://www.w3.org/2000/svg">
+            <!-- BASE SILHOUETTE -->
+            <g id="silhouetteBase">
+              <!-- Head -->
+              <ellipse cx="100" cy="42" rx="28" ry="32" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Neck -->
+              <rect x="88" y="70" width="24" height="22" rx="4" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Torso -->
+              <path d="M 60 90 Q 48 100 46 130 Q 44 165 48 195 Q 52 220 60 228 L 140 228 Q 148 220 152 195 Q 156 165 154 130 Q 152 100 140 90 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Shoulders -->
+              <ellipse cx="54" cy="98" rx="18" ry="12" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <ellipse cx="146" cy="98" rx="18" ry="12" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Left Arm -->
+              <path d="M 40 95 Q 30 120 28 155 Q 26 175 32 195 Q 36 205 40 210 L 50 207 Q 46 196 44 178 Q 42 155 46 130 Q 48 110 56 102 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Right Arm -->
+              <path d="M 160 95 Q 170 120 172 155 Q 174 175 168 195 Q 164 205 160 210 L 150 207 Q 154 196 156 178 Q 158 155 154 130 Q 152 110 144 102 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Hips/Pelvis -->
+              <path d="M 52 225 Q 44 235 42 250 Q 40 265 48 275 L 152 275 Q 160 265 158 250 Q 156 235 148 225 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Left Thigh -->
+              <path d="M 52 268 Q 44 285 43 315 Q 42 345 46 370 L 92 370 Q 94 345 92 315 Q 90 285 96 268 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Right Thigh -->
+              <path d="M 148 268 Q 156 285 157 315 Q 158 345 154 370 L 108 370 Q 106 345 108 315 Q 110 285 104 268 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Left Calf -->
+              <path d="M 48 368 Q 44 385 44 410 Q 44 435 48 455 L 88 455 Q 90 435 90 410 Q 90 385 90 368 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Right Calf -->
+              <path d="M 152 368 Q 156 385 156 410 Q 156 435 152 455 L 112 455 Q 110 435 110 410 Q 110 385 110 368 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <!-- Feet -->
+              <ellipse cx="68" cy="460" rx="22" ry="10" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+              <ellipse cx="132" cy="460" rx="22" ry="10" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
+            </g>
+
+            <!-- FAT ZONES (overlays) -->
+            <!-- Abdomen/Belly fat -->
+            <ellipse id="zone-belly" class="fat-zone" cx="100" cy="168" rx="46" ry="42" fill="#ff5c35"/>
+            <!-- Love handles / flanks -->
+            <ellipse id="zone-flanks-l" class="fat-zone" cx="50" cy="180" rx="16" ry="30" fill="#ff5c35"/>
+            <ellipse id="zone-flanks-r" class="fat-zone" cx="150" cy="180" rx="16" ry="30" fill="#ff5c35"/>
+            <!-- Chest/Pecs -->
+            <ellipse id="zone-chest" class="fat-zone" cx="100" cy="118" rx="38" ry="24" fill="#ff5c35"/>
+            <!-- Hips/Butt -->
+            <ellipse id="zone-hips" class="fat-zone" cx="100" cy="255" rx="52" ry="26" fill="#ff5c35"/>
+            <!-- Thighs -->
+            <ellipse id="zone-thighs-l" class="fat-zone" cx="68" cy="320" rx="24" ry="48" fill="#ff5c35"/>
+            <ellipse id="zone-thighs-r" class="fat-zone" cx="132" cy="320" rx="24" ry="48" fill="#ff5c35"/>
+            <!-- Arms -->
+            <ellipse id="zone-arms-l" class="fat-zone" cx="37" cy="152" rx="12" ry="38" fill="#ff5c35"/>
+            <ellipse id="zone-arms-r" class="fat-zone" cx="163" cy="152" rx="12" ry="38" fill="#ff5c35"/>
+            <!-- Face/Neck -->
+            <ellipse id="zone-face" class="fat-zone" cx="100" cy="42" rx="28" ry="32" fill="#ff5c35"/>
+            <!-- Back/lower back -->
+            <ellipse id="zone-back" class="fat-zone" cx="100" cy="200" rx="40" ry="18" fill="#ff5c35"/>
+
+            <!-- Body outline (always on top) -->
+            <g id="silhouetteOutline" fill="none" stroke="#4a5165" stroke-width="1" opacity="0.6">
+              <!-- Muscle lines subtle -->
+              <line x1="100" y1="92" x2="100" y2="225" stroke-dasharray="2,4" opacity="0.3"/>
+              <path d="M 70 130 Q 100 140 130 130" opacity="0.3"/>
+              <path d="M 65 170 Q 100 185 135 170" opacity="0.3"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--low)"></div>Bajo</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--medium)"></div>Moderado</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--high)"></div>Alto</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--critical)"></div>Crítico</div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results" class="results-section">
+        <div class="bmi-row">
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="imc-val">—</div>
+            <div class="mini-stat-lbl">IMC</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-stat-val" id="fat-mass-val">—</div>
+            <div class="mini-stat-lbl">Kg de grasa</div>
+          </div>
+        </div>
+
+        <div class="result-main">
+          <div class="result-pct" id="fat-pct">—%</div>
+          <div class="result-label">Porcentaje de Grasa Corporal</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="fat-bar" style="width:0%"></div>
+          </div>
+          <div class="result-category" id="fat-cat">—</div>
+        </div>
+
+        <div class="zone-list" id="zone-list"></div>
+
+        <div class="tip-box" id="tip-box"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const sexEl = document.getElementById('sex');
+const hipGroup = document.getElementById('hip-group');
+
+sexEl.addEventListener('change', () => {
+  hipGroup.style.display = sexEl.value === 'female' ? 'block' : 'none';
+});
+hipGroup.style.display = 'none';
+
+function analyze() {
+  const sex = sexEl.value;
+  const age = parseFloat(document.getElementById('age').value);
+  const weight = parseFloat(document.getElementById('weight').value);
+  const height = parseFloat(document.getElementById('height').value);
+  const waist = parseFloat(document.getElementById('waist').value);
+  const neck = parseFloat(document.getElementById('neck').value);
+  const hip = parseFloat(document.getElementById('hip').value);
+  const arm = parseFloat(document.getElementById('arm').value) || null;
+  const thigh = parseFloat(document.getElementById('thigh').value) || null;
+  const abdomen = parseFloat(document.getElementById('abdomen').value) || null;
+
+  if (!age || !weight || !height || !waist || !neck) {
+    alert('Por favor completa: edad, peso, estatura, cintura y cuello.');
+    return;
+  }
+  if (sex === 'female' && !hip) {
+    alert('Para mujeres, ingresa la medida de cadera.');
+    return;
+  }
+
+  // US Navy Method
+  let bodyFat;
+  const heightCm = height;
+  if (sex === 'male') {
+    bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(heightCm)) - 450;
+  } else {
+    bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(heightCm)) - 450;
+  }
+
+  bodyFat = Math.max(3, Math.min(65, bodyFat));
+  const bmi = weight / ((height / 100) ** 2);
+  const fatMass = (bodyFat / 100) * weight;
+  const leanMass = weight - fatMass;
+
+  // Determine category
+  let category, catColor;
+  if (sex === 'male') {
+    if (bodyFat < 6)        { category = 'ESENCIAL';    catColor = '#4ecdc4'; }
+    else if (bodyFat < 14)  { category = 'ATLÉTICO';    catColor = '#4ecdc4'; }
+    else if (bodyFat < 18)  { category = 'FITNESS';     catColor = '#a8e6cf'; }
+    else if (bodyFat < 25)  { category = 'PROMEDIO';    catColor = '#ffb347'; }
+    else if (bodyFat < 32)  { category = 'ALTO';        catColor = '#ff5c35'; }
+    else                    { category = 'OBESIDAD';    catColor = '#ff1744'; }
+  } else {
+    if (bodyFat < 14)       { category = 'ESENCIAL';    catColor = '#4ecdc4'; }
+    else if (bodyFat < 21)  { category = 'ATLÉTICA';    catColor = '#4ecdc4'; }
+    else if (bodyFat < 25)  { category = 'FITNESS';     catColor = '#a8e6cf'; }
+    else if (bodyFat < 32)  { category = 'PROMEDIO';    catColor = '#ffb347'; }
+    else if (bodyFat < 39)  { category = 'ALTO';        catColor = '#ff5c35'; }
+    else                    { category = 'OBESIDAD';    catColor = '#ff1744'; }
+  }
+
+  // Zone analysis
+  const waistHipRatio = sex === 'male' ? waist / (hip || waist * 0.9) : waist / hip;
+  const waistHeightRatio = waist / height;
+  const bmiZone = bmi;
+
+  // Belly / abdominal fat
+  let bellyLevel = 'none';
+  if (waist > (sex === 'male' ? 102 : 88)) bellyLevel = 'critical';
+  else if (waist > (sex === 'male' ? 94 : 80)) bellyLevel = 'high';
+  else if (waist > (sex === 'male' ? 84 : 72)) bellyLevel = 'medium';
+  else if (bodyFat > (sex === 'male' ? 18 : 26)) bellyLevel = 'low';
+
+  // Flanks
+  let flanksLevel = 'none';
+  if (waistHipRatio > (sex === 'male' ? 1.0 : 0.90)) flanksLevel = 'critical';
+  else if (waistHipRatio > (sex === 'male' ? 0.95 : 0.85)) flanksLevel = 'high';
+  else if (waistHipRatio > (sex === 'male' ? 0.90 : 0.80)) flanksLevel = 'medium';
+  else if (bodyFat > (sex === 'male' ? 20 : 28)) flanksLevel = 'low';
+
+  // Chest (male) / arms
+  let armsLevel = 'none';
+  if (arm) {
+    const armRatio = arm / height;
+    if (armRatio > 0.22) armsLevel = 'critical';
+    else if (armRatio > 0.20) armsLevel = 'high';
+    else if (armRatio > 0.18) armsLevel = 'medium';
+    else if (bodyFat > (sex === 'male' ? 22 : 30)) armsLevel = 'low';
+  } else if (bodyFat > (sex === 'male' ? 25 : 33)) {
+    armsLevel = 'medium';
+  } else if (bodyFat > (sex === 'male' ? 20 : 28)) {
+    armsLevel = 'low';
+  }
+
+  // Chest
+  let chestLevel = 'none';
+  if (sex === 'male') {
+    if (bodyFat > 30) chestLevel = 'critical';
+    else if (bodyFat > 25) chestLevel = 'high';
+    else if (bodyFat > 20) chestLevel = 'medium';
+    else if (bodyFat > 16) chestLevel = 'low';
+  } else {
+    if (bodyFat > 38) chestLevel = 'high';
+    else if (bodyFat > 32) chestLevel = 'medium';
+    else if (bodyFat > 26) chestLevel = 'low';
+  }
+
+  // Hips/Glutes
+  let hipsLevel = 'none';
+  if (sex === 'female') {
+    if (hip > 115) hipsLevel = 'critical';
+    else if (hip > 105) hipsLevel = 'high';
+    else if (hip > 98) hipsLevel = 'medium';
+    else if (bodyFat > 28) hipsLevel = 'low';
+  } else {
+    if (bodyFat > 28) hipsLevel = 'medium';
+    else if (bodyFat > 22) hipsLevel = 'low';
+  }
+
+  // Thighs
+  let thighsLevel = 'none';
+  if (thigh) {
+    const thighRatio = thigh / height;
+    if (thighRatio > 0.38) thighsLevel = 'critical';
+    else if (thighRatio > 0.35) thighsLevel = 'high';
+    else if (thighRatio > 0.32) thighsLevel = 'medium';
+    else if (bodyFat > (sex === 'male' ? 22 : 30)) thighsLevel = 'low';
+  } else if (sex === 'female') {
+    if (bodyFat > 38) thighsLevel = 'high';
+    else if (bodyFat > 32) thighsLevel = 'medium';
+    else if (bodyFat > 26) thighsLevel = 'low';
+  } else {
+    if (bodyFat > 28) thighsLevel = 'low';
+  }
+
+  // Face
+  let faceLevel = 'none';
+  if (bmi > 35) faceLevel = 'high';
+  else if (bmi > 30) faceLevel = 'medium';
+  else if (bmi > 27) faceLevel = 'low';
+
+  // Lower back
+  let backLevel = 'none';
+  if (abdomen) {
+    const diff = abdomen - waist;
+    if (diff > 15) backLevel = 'critical';
+    else if (diff > 10) backLevel = 'high';
+    else if (diff > 5) backLevel = 'medium';
+    else backLevel = 'low';
+  } else if (bodyFat > (sex === 'male' ? 24 : 32)) {
+    backLevel = 'medium';
+  } else if (bodyFat > (sex === 'male' ? 18 : 26)) {
+    backLevel = 'low';
+  }
+
+  // Apply to SVG
+  applyZone('zone-belly', bellyLevel);
+  applyZone('zone-flanks-l', flanksLevel);
+  applyZone('zone-flanks-r', flanksLevel);
+  applyZone('zone-chest', chestLevel);
+  applyZone('zone-hips', hipsLevel);
+  applyZone('zone-thighs-l', thighsLevel);
+  applyZone('zone-thighs-r', thighsLevel);
+  applyZone('zone-arms-l', armsLevel);
+  applyZone('zone-arms-r', armsLevel);
+  applyZone('zone-face', faceLevel);
+  applyZone('zone-back', backLevel);
+
+  // Show results
+  document.getElementById('fat-pct').textContent = bodyFat.toFixed(1) + '%';
+  document.getElementById('fat-pct').style.color = catColor;
+  document.getElementById('imc-val').textContent = bmi.toFixed(1);
+  document.getElementById('fat-mass-val').textContent = fatMass.toFixed(1);
+  document.getElementById('fat-cat').textContent = category;
+  document.getElementById('fat-cat').style.color = catColor;
+
+  const barPct = Math.min(100, (bodyFat / (sex === 'male' ? 40 : 50)) * 100);
+  const bar = document.getElementById('fat-bar');
+  bar.style.width = barPct + '%';
+  bar.style.background = catColor;
+
+  // Build zone list
+  const zones = [
+    { id: 'belly', level: bellyLevel, icon: '🫁', name: 'Abdomen / Vientre', desc: descFor('belly', bellyLevel, sex) },
+    { id: 'flanks', level: flanksLevel, icon: '🔴', name: 'Costados / Flotadores', desc: descFor('flanks', flanksLevel, sex) },
+    { id: 'chest', level: chestLevel, icon: '💪', name: sex === 'male' ? 'Pecho / Ginecomastia' : 'Pecho', desc: descFor('chest', chestLevel, sex) },
+    { id: 'arms', level: armsLevel, icon: '💪', name: 'Brazos / Tríceps', desc: descFor('arms', armsLevel, sex) },
+    { id: 'hips', level: hipsLevel, icon: '🍑', name: 'Cadera / Glúteos', desc: descFor('hips', hipsLevel, sex) },
+    { id: 'thighs', level: thighsLevel, icon: '🦵', name: 'Muslos', desc: descFor('thighs', thighsLevel, sex) },
+    { id: 'back', level: backLevel, icon: '🔙', name: 'Espalda baja / Lumbares', desc: descFor('back', backLevel, sex) },
+    { id: 'face', level: faceLevel, icon: '😶', name: 'Rostro / Papada', desc: descFor('face', faceLevel, sex) },
+  ].filter(z => z.level !== 'none');
+
+  const list = document.getElementById('zone-list');
+  list.innerHTML = '';
+  zones.forEach((z, i) => {
+    const el = document.createElement('div');
+    el.className = 'zone-item';
+    el.innerHTML = `
+      <div class="zone-icon">${z.icon}</div>
+      <div class="zone-info">
+        <div class="zone-name">${z.name}</div>
+        <div class="zone-desc">${z.desc}</div>
+      </div>
+      <div class="zone-badge badge-${z.level}">${z.level.toUpperCase()}</div>
+    `;
+    list.appendChild(el);
+    setTimeout(() => el.classList.add('visible'), 100 + i * 80);
+  });
+
+  if (zones.length === 0) {
+    list.innerHTML = '<div class="zone-item visible" style="color:var(--low)">✅ Tu distribución de grasa es saludable. ¡Sigue así!</div>';
+  }
+
+  // Tip
+  document.getElementById('tip-box').innerHTML = getTip(bodyFat, sex, age, waistHeightRatio);
+
+  const res = document.getElementById('results');
+  res.classList.add('visible');
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function applyZone(id, level) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'fat-zone';
+  if (level !== 'none') {
+    void el.offsetWidth;
+    el.classList.add(`active-${level}`);
+  }
+}
+
+function descFor(zone, level, sex) {
+  const descs = {
+    belly: {
+      low: 'Leve acumulación abdominal. Considera reducir carbohidratos refinados.',
+      medium: 'Grasa visceral moderada. Riesgo cardiovascular incipiente.',
+      high: 'Grasa visceral elevada. Asociada a resistencia a la insulina.',
+      critical: '⚠️ Grasa visceral peligrosa. Consulta a tu médico urgentemente.',
+    },
+    flanks: {
+      low: 'Pequeños rollos laterales. Responden bien al ejercicio aeróbico.',
+      medium: 'Depósitos en costados evidentes. Reduce calorías totales.',
+      high: 'Flotadores marcados. Mejora dieta y aumenta actividad física.',
+      critical: 'Acumulación severa en flancos. Índice cintura-cadera muy elevado.',
+    },
+    chest: {
+      low: sex === 'male' ? 'Leve grasa pectoral.' : 'Normal en mujeres.',
+      medium: sex === 'male' ? 'Ginecomastia incipiente. Reduce grasa total.' : 'Grasa pectoral moderada.',
+      high: sex === 'male' ? 'Ginecomastia notable. Requiere atención.' : 'Exceso de grasa pectoral.',
+      critical: sex === 'male' ? 'Ginecomastia severa. Consulta profesional.' : 'Grasa pectoral muy elevada.',
+    },
+    arms: {
+      low: 'Leve grasa en tríceps. Ejercicios de fuerza ayudan.',
+      medium: 'Grasa en brazos moderada. Combina cardio y pesas.',
+      high: 'Brazos con exceso de grasa. Plan de entrenamiento recomendado.',
+      critical: 'Grasa muy alta en extremidades superiores.',
+    },
+    hips: {
+      low: 'Cadera ligeramente amplia. Normal en mujeres.',
+      medium: 'Grasa en cadera notable. Cardio de baja intensidad ayuda.',
+      high: 'Exceso de grasa en zona glútea y caderas.',
+      critical: 'Grasa muy alta en cadera. Dieta y ejercicio intensivo necesarios.',
+    },
+    thighs: {
+      low: 'Leve grasa en muslos. Ejercicios de piernas recomendados.',
+      medium: 'Grasa en muslos moderada. Squats y cardio son clave.',
+      high: 'Celulitis y grasa en muslos elevada. Plan específico recomendado.',
+      critical: 'Grasa muy alta en muslos. Consulta especialista.',
+    },
+    back: {
+      low: 'Leve grasa en espalda baja. Trabajar core ayuda.',
+      medium: 'Grasa lumbar moderada. Ejercicios de espalda y cardio.',
+      high: 'Exceso de grasa en zona lumbar. Cuidado postural + dieta.',
+      critical: 'Grasa muy alta en espalda. Riesgo de dolor lumbar crónico.',
+    },
+    face: {
+      low: 'Leve redondez facial. Hidratación y sueño mejoran.',
+      medium: 'Cara redonda por exceso de peso general.',
+      high: 'Papada notable. Pérdida de peso total necesaria.',
+      critical: 'Exceso de grasa facial severo. Asociado a obesidad.',
+    },
+  };
+  return descs[zone]?.[level] || '';
+}
+
+function getTip(bf, sex, age, whr) {
+  const healthy = sex === 'male' ? bf < 18 : bf < 26;
+  if (healthy && whr < 0.5) {
+    return `<strong>✅ Composición corporal saludable</strong><br>Mantén tus hábitos actuales. Prioriza ejercicio de fuerza 3x/semana y dieta rica en proteínas (1.6–2.2g/kg de peso).`;
+  } else if (bf < (sex === 'male' ? 25 : 33)) {
+    return `<strong>📋 Recomendaciones personalizadas:</strong><br>Crea un déficit calórico de 300–500 kcal/día. Prioriza proteínas (pollo, huevo, legumbres). Realiza 150 min/semana de cardio moderado + 2–3 sesiones de fuerza. Duerme 7–9 horas para regular cortisol.`;
+  } else {
+    return `<strong>⚠️ Plan de acción recomendado:</strong><br>Visita a tu médico para un perfil lipídico completo. Comienza con caminatas de 30 min diarios. Elimina azúcares añadidos y ultraprocesados. Considera apoyo nutricional profesional. Cada 1% de grasa perdida mejora tu salud significativamente.`;
+  }
+}
+</script>
+</body>
+</html>
