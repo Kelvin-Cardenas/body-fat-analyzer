@@ -3,910 +3,1124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Analizador de Grasa Corporal</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>HealthMap — Análisis de Salud Corporal</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --card: #181c24;
-    --border: #252a35;
-    --accent: #ff5c35;
-    --accent2: #ffb347;
-    --accent3: #4ecdc4;
-    --text: #eef0f4;
-    --muted: #6b7280;
-    --low: #4ecdc4;
-    --medium: #ffb347;
-    --high: #ff5c35;
-    --critical: #ff1744;
-  }
+/* ============================================================
+   DESIGN TOKENS
+   Palette: deep navy + electric cyan + warm amber
+   Type: Outfit — single family, wide weight range
+   Concept: medical-grade clarity meets digital precision
+   ============================================================ */
+:root {
+  --ink: #050810;
+  --ink2: #0b0f1a;
+  --ink3: #111828;
+  --ink4: #1a2235;
+  --ink5: #232d42;
+  --line: #2a3550;
+  --line2: #354060;
+  --cyan: #00d4ff;
+  --cyan2: #00a8cc;
+  --amber: #ffa726;
+  --amber2: #ff8f00;
+  --rose: #ff4d6d;
+  --rose2: #c9184a;
+  --sage: #00e5a0;
+  --text: #e8edf8;
+  --text2: #9aa5be;
+  --text3: #5a6680;
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* Risk */
+  --r-ok: #00e5a0;
+  --r-low: #7ecfff;
+  --r-mid: #ffa726;
+  --r-high: #ff4d6d;
+  --r-crit: #ff1744;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
 
-  body::before {
-    content: '';
-    position: fixed;
-    top: -200px; right: -200px;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(255,92,53,0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── BACKGROUND ── */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;
+}
+.bg-radial{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 10%, rgba(0,212,255,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgba(255,167,38,0.04) 0%, transparent 70%);
+}
 
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: -200px; left: -200px;
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(78,205,196,0.06) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
+/* ── WRAPPER ── */
+.page{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 20px 80px;}
 
-  header {
-    text-align: center;
-    padding: 48px 24px 24px;
-    position: relative;
-    z-index: 1;
-  }
+/* ── HEADER ── */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:24px 0 0;
+  border-bottom:1px solid var(--line);
+  padding-bottom:20px;
+  margin-bottom:40px;
+}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+}
+.logo-text{font-weight:800;font-size:1.1rem;letter-spacing:-0.5px;}
+.logo-text span{color:var(--cyan);}
+.header-badge{
+  font-size:0.72rem;font-weight:600;
+  color:var(--text3);letter-spacing:0.5px;
+  border:1px solid var(--line2);
+  border-radius:99px;padding:6px 14px;
+}
 
-  header h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    letter-spacing: 4px;
-    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-  }
+/* ── HERO ── */
+.hero{
+  text-align:center;
+  padding:20px 0 48px;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,212,255,0.07);
+  border:1px solid rgba(0,212,255,0.18);
+  border-radius:99px;padding:6px 16px;
+  font-size:0.75rem;font-weight:600;color:var(--cyan);
+  margin-bottom:24px;letter-spacing:0.3px;
+}
+.hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero h1{
+  font-size:clamp(2.4rem,5.5vw,4.2rem);
+  font-weight:900;line-height:1.03;
+  letter-spacing:-2px;
+  color:var(--text);
+  margin-bottom:16px;
+}
+.hero h1 em{font-style:normal;color:var(--cyan);}
+.hero p{
+  color:var(--text2);max-width:520px;margin:0 auto;
+  font-size:1rem;font-weight:300;line-height:1.7;
+}
 
-  header p {
-    color: var(--muted);
-    margin-top: 8px;
-    font-size: 0.95rem;
-    letter-spacing: 1px;
-  }
+/* ── STEP PROGRESS ── */
+.progress-track{
+  display:flex;align-items:center;
+  gap:0;margin:0 auto 40px;
+  max-width:600px;
+}
+.pstep{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;position:relative;
+}
+.pstep:not(:last-child)::after{
+  content:'';position:absolute;
+  top:14px;left:50%;width:100%;height:1px;
+  background:var(--line2);z-index:0;
+  transition:background 0.4s;
+}
+.pstep.done::after{background:var(--cyan);}
+.pnum{
+  width:28px;height:28px;border-radius:50%;
+  border:1.5px solid var(--line2);
+  background:var(--ink3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.72rem;font-weight:700;color:var(--text3);
+  position:relative;z-index:1;
+  transition:all 0.3s;
+}
+.pstep.active .pnum{border-color:var(--cyan);background:var(--cyan);color:var(--ink);}
+.pstep.done .pnum{border-color:var(--cyan);background:var(--ink3);color:var(--cyan);}
+.plbl{font-size:0.65rem;color:var(--text3);margin-top:6px;font-weight:500;transition:color 0.3s;}
+.pstep.active .plbl{color:var(--cyan);}
 
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px 80px;
-    position: relative;
-    z-index: 1;
-  }
+/* ── PANEL SYSTEM ── */
+.panel{display:none;}
+.panel.active{display:block;animation:up 0.35s cubic-bezier(.22,1,.36,1);}
+@keyframes up{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    align-items: start;
-  }
+/* ── GLASS CARD ── */
+.gcard{
+  background:rgba(17,24,40,0.7);
+  border:1px solid var(--line);
+  border-radius:20px;
+  backdrop-filter:blur(12px);
+  padding:32px;
+  margin-bottom:16px;
+}
+.gcard-title{
+  font-size:0.8rem;font-weight:700;
+  color:var(--text3);letter-spacing:1px;
+  margin-bottom:24px;
+}
 
-  @media (max-width: 768px) {
-    .main-grid { grid-template-columns: 1fr; }
-  }
+/* ── FORM ── */
+.field{margin-bottom:20px;}
+.field > label{
+  display:block;font-size:0.82rem;font-weight:600;
+  color:var(--text2);margin-bottom:10px;
+}
+select, input[type=text], input[type=number]{
+  width:100%;
+  background:var(--ink3);
+  border:1px solid var(--line2);
+  border-radius:12px;
+  padding:13px 16px;
+  color:var(--text);
+  font-family:'Outfit',sans-serif;
+  font-size:0.95rem;
+  outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  -webkit-appearance:none;
+}
+select:focus,input:focus{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(0,212,255,0.1);
+}
+select option{background:#111828;}
+.twoCol{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:540px){.twoCol{grid-template-columns:1fr;}}
 
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 28px;
-  }
+/* ── VISUAL PICKER ── */
+.vpick{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
+  gap:10px;
+}
+.vopt{
+  cursor:pointer;
+  border:1.5px solid var(--line2);
+  border-radius:14px;
+  padding:14px 8px 12px;
+  text-align:center;
+  background:var(--ink3);
+  transition:all 0.18s;
+  user-select:none;
+}
+.vopt:hover{border-color:rgba(0,212,255,0.35);background:rgba(0,212,255,0.04);}
+.vopt.sel{border-color:var(--cyan);background:rgba(0,212,255,0.09);}
+.vopt .vi{font-size:1.9rem;display:block;margin-bottom:6px;}
+.vopt .vl{font-size:0.7rem;font-weight:500;color:var(--text3);line-height:1.3;}
+.vopt.sel .vl{color:var(--cyan);}
 
-  .card-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    letter-spacing: 3px;
-    color: var(--accent);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* ── CHIP SELECTOR ── */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{
+  cursor:pointer;
+  border:1px solid var(--line2);
+  border-radius:99px;
+  padding:8px 15px;
+  font-size:0.78rem;font-weight:500;
+  background:var(--ink3);color:var(--text3);
+  transition:all 0.18s;user-select:none;
+  white-space:nowrap;
+}
+.chip:hover{border-color:var(--line);color:var(--text2);}
+.chip.sel{border-color:var(--cyan);background:rgba(0,212,255,0.1);color:var(--cyan);}
+.chip.warn.sel{border-color:var(--amber);background:rgba(255,167,38,0.1);color:var(--amber);}
+.chip.danger.sel{border-color:var(--rose);background:rgba(255,77,109,0.1);color:var(--rose);}
 
-  .card-title::before {
-    content: '';
-    width: 4px;
-    height: 20px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;}
+.btn{
+  padding:14px 28px;border:none;border-radius:12px;
+  font-family:'Outfit',sans-serif;font-size:0.92rem;font-weight:700;
+  cursor:pointer;transition:all 0.2s;letter-spacing:0.2px;
+  white-space:nowrap;
+}
+.btn-ghost{background:transparent;border:1px solid var(--line2);color:var(--text3);}
+.btn-ghost:hover{border-color:var(--line);color:var(--text2);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:var(--ink);flex:1;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,212,255,0.25);}
+.btn-primary:active{transform:translateY(0);}
+.btn-big{
+  width:100%;padding:18px;font-size:1rem;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  color:var(--ink);
+}
 
-  .form-group {
-    margin-bottom: 18px;
-  }
+/* ── RESULTS LAYOUT ── */
+.results-wrap{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:20px;align-items:start;
+}
+@media(max-width:800px){.results-wrap{grid-template-columns:1fr;}}
 
-  label {
-    display: block;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
+/* ── BODY MAP CARD ── */
+.map-card{
+  background:rgba(11,15,26,0.9);
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:24px 20px;
+  position:sticky;top:20px;
+  backdrop-filter:blur(16px);
+}
+.map-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.map-title{font-size:0.75rem;font-weight:700;color:var(--text3);letter-spacing:1px;}
+.map-status{
+  font-size:0.7rem;font-weight:600;
+  padding:4px 10px;border-radius:99px;
+  background:rgba(0,212,255,0.1);color:var(--cyan);
+  border:1px solid rgba(0,212,255,0.2);
+}
 
-  input, select {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    -webkit-appearance: none;
-  }
+/* SVG BODY */
+.svg-wrap{
+  display:flex;justify-content:center;
+  position:relative;
+}
+#bodySvg{
+  width:100%;max-width:220px;
+  filter:drop-shadow(0 0 40px rgba(0,212,255,0.08));
+}
 
-  input:focus, select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255,92,53,0.12);
-  }
+/* Zone animations */
+.zone{opacity:0;transition:opacity 0.8s ease,fill 0.5s ease;}
+.zone.zl{opacity:0.3;}
+.zone.zm{opacity:0.55;}
+.zone.zh{opacity:0.78;}
+.zone.zc{opacity:0.92;animation:zpulse 1.5s ease-in-out infinite;}
+@keyframes zpulse{0%,100%{opacity:0.92;}50%{opacity:0.45;}}
 
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
+/* organ highlight */
+.ohlt{opacity:0;transition:opacity 0.6s ease;}
+.ohlt.on-low{opacity:0.45;}
+.ohlt.on-mid{opacity:0.65;}
+.ohlt.on-high{opacity:0.85;animation:zpulse 1.5s ease-in-out infinite;}
+.ohlt.on-crit{opacity:0.95;animation:zpulse 0.9s ease-in-out infinite;}
 
-  .hint {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
+/* MAP LEGEND */
+.map-legend{
+  display:flex;flex-wrap:wrap;gap:8px;
+  justify-content:center;margin-top:16px;
+}
+.leg{display:flex;align-items:center;gap:5px;font-size:0.66rem;color:var(--text3);font-weight:500;}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
 
-  .btn {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--accent), #ff8c42);
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
-    letter-spacing: 3px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-    margin-top: 8px;
-  }
+/* SCAN LINE effect */
+.scan-anim{
+  position:absolute;
+  left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  animation:scan 3s linear infinite;
+  opacity:0;pointer-events:none;
+  top:0;
+}
+.svg-wrap:hover .scan-anim{opacity:1;}
+@keyframes scan{0%{top:0%;opacity:0;}5%{opacity:0.7;}95%{opacity:0.7;}100%{top:100%;opacity:0;}}
 
-  .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(255,92,53,0.35);
-  }
+/* ── RIGHT COLUMN ── */
+.score-card{
+  background:rgba(17,24,40,0.8);
+  border:1px solid var(--line);
+  border-radius:20px;padding:24px;
+  display:flex;align-items:center;gap:20px;
+  margin-bottom:16px;
+  backdrop-filter:blur(12px);
+}
+.ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0;}
+.ring-wrap svg{width:88px;height:88px;}
+.ring-inner{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.ring-val{font-size:1.6rem;font-weight:900;line-height:1;}
+.ring-lbl{font-size:0.55rem;font-weight:600;color:var(--text3);margin-top:2px;letter-spacing:0.5px;}
+.score-info h2{font-size:1.3rem;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;}
+.score-info p{font-size:0.82rem;color:var(--text2);line-height:1.6;font-weight:300;}
 
-  .btn:active { transform: translateY(0); }
+/* ORGAN CARDS */
+.organs-title{
+  font-size:0.75rem;font-weight:700;color:var(--text3);
+  letter-spacing:1px;margin-bottom:12px;
+}
+.organ-list{display:flex;flex-direction:column;gap:12px;}
+.ocard{
+  background:rgba(17,24,40,0.75);
+  border:1px solid var(--line);
+  border-radius:16px;overflow:hidden;
+  display:grid;grid-template-columns:72px 1fr;
+  backdrop-filter:blur(8px);
+  opacity:0;transform:translateY(12px);
+  transition:opacity 0.4s ease,transform 0.4s ease,border-color 0.3s;
+}
+.ocard.in{opacity:1;transform:translateY(0);}
+.ocard:hover{border-color:var(--line2);}
+.ocard-thumb{
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;
+  background:var(--ink3);
+  border-right:1px solid var(--line);
+}
+.ocard-body{padding:14px 16px;}
+.ocard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.ocard-name{font-size:0.9rem;font-weight:700;}
+.rbadge{
+  font-size:0.62rem;font-weight:700;letter-spacing:0.8px;
+  padding:3px 9px;border-radius:6px;
+}
+.rb-ok{background:rgba(0,229,160,0.1);color:var(--r-ok);}
+.rb-low{background:rgba(126,207,255,0.1);color:var(--r-low);}
+.rb-mid{background:rgba(255,167,38,0.12);color:var(--r-mid);}
+.rb-high{background:rgba(255,77,109,0.12);color:var(--r-high);}
+.rb-crit{background:rgba(255,23,68,0.15);color:var(--r-crit);}
+.ocard-desc{font-size:0.78rem;color:var(--text2);line-height:1.55;font-weight:300;margin-bottom:8px;}
+.dtags{display:flex;flex-wrap:wrap;gap:4px;}
+.dtag{
+  font-size:0.65rem;background:var(--ink4);
+  border:1px solid var(--line);border-radius:5px;
+  padding:2px 8px;color:var(--text3);
+}
 
-  /* Silhouette Section */
-  .silhouette-card {
-    position: relative;
-    min-height: 500px;
-  }
+/* TIP BOX */
+.tip-box{
+  background:rgba(0,212,255,0.04);
+  border:1px solid rgba(0,212,255,0.12);
+  border-radius:16px;
+  padding:18px 20px;
+  margin-top:16px;
+  font-size:0.83rem;line-height:1.7;
+  color:var(--text2);font-weight:300;
+}
+.tip-box strong{font-weight:700;color:var(--cyan);display:block;margin-bottom:8px;font-size:0.85rem;}
 
-  .silhouette-wrap {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 0;
-    position: relative;
-  }
+/* LOADING */
+.loading-state{
+  text-align:center;padding:80px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+}
+.pulse-ring{
+  width:60px;height:60px;border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:var(--cyan);
+  border-right-color:rgba(0,212,255,0.3);
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-state h3{font-size:1.1rem;font-weight:600;}
+.loading-state p{color:var(--text3);font-size:0.85rem;font-weight:300;}
+.loading-dots span{animation:ldot 1.2s ease-in-out infinite;}
+.loading-dots span:nth-child(2){animation-delay:0.2s;}
+.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes ldot{0%,80%,100%{opacity:0;}40%{opacity:1;}}
 
-  #bodySvg {
-    width: 220px;
-    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
-    transition: all 0.3s;
-  }
-
-  /* Fat zones - by default invisible */
-  .fat-zone {
-    opacity: 0;
-    transition: opacity 0.6s ease, fill 0.6s ease;
-  }
-
-  .fat-zone.active-low    { opacity: 0.35; fill: var(--low); }
-  .fat-zone.active-medium { opacity: 0.55; fill: var(--medium); }
-  .fat-zone.active-high   { opacity: 0.75; fill: var(--high); }
-  .fat-zone.active-critical { opacity: 0.9; fill: var(--critical); animation: pulse-zone 1.5s ease-in-out infinite; }
-
-  @keyframes pulse-zone {
-    0%, 100% { opacity: 0.9; }
-    50% { opacity: 0.5; }
-  }
-
-  /* Legend */
-  .legend {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    justify-content: center;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-
-  /* Results */
-  .results-section {
-    margin-top: 24px;
-    display: none;
-    animation: fadeUp 0.5s ease;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .results-section.visible { display: block; }
-
-  .result-main {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-    text-align: center;
-  }
-
-  .result-pct {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 4rem;
-    line-height: 1;
-    transition: color 0.5s;
-  }
-
-  .result-label {
-    font-size: 0.8rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  .result-category {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
-    letter-spacing: 3px;
-    margin-top: 8px;
-  }
-
-  .zone-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .zone-item {
-    background: var(--surface);
-    border-radius: 12px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: all 0.3s;
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-
-  .zone-item.visible {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  .zone-icon {
-    font-size: 1.4rem;
-    flex-shrink: 0;
-  }
-
-  .zone-info { flex: 1; }
-  .zone-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 2px;
-  }
-
-  .zone-desc {
-    font-size: 0.78rem;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
-  .zone-badge {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.85rem;
-    letter-spacing: 1.5px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    flex-shrink: 0;
-  }
-
-  .badge-low { background: rgba(78,205,196,0.15); color: var(--low); }
-  .badge-medium { background: rgba(255,179,71,0.15); color: var(--medium); }
-  .badge-high { background: rgba(255,92,53,0.2); color: var(--high); }
-  .badge-critical { background: rgba(255,23,68,0.2); color: var(--critical); }
-
-  .bmi-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .mini-stat {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-  }
-
-  .mini-stat-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
-    line-height: 1;
-  }
-
-  .mini-stat-lbl {
-    font-size: 0.7rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  .tip-box {
-    background: linear-gradient(135deg, rgba(255,92,53,0.08), rgba(255,179,71,0.06));
-    border: 1px solid rgba(255,92,53,0.2);
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 16px;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    color: #c8cbd4;
-  }
-
-  .tip-box strong { color: var(--accent2); }
-
-  .progress-bar-wrap {
-    background: var(--surface);
-    border-radius: 99px;
-    height: 8px;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-
-  .progress-bar-fill {
-    height: 100%;
-    border-radius: 99px;
-    transition: width 1s ease, background 0.5s;
-  }
-
-  select option { background: #1a1e27; }
-
-  .measure-hint {
-    background: rgba(78,205,196,0.05);
-    border: 1px solid rgba(78,205,196,0.15);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 20px;
-    font-size: 0.78rem;
-    color: var(--accent3);
-    line-height: 1.5;
-  }
-
-  .measure-hint strong { display: block; margin-bottom: 4px; font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase; }
+/* ERROR BOX */
+.err-box{
+  background:rgba(255,77,109,0.06);border:1px solid rgba(255,77,109,0.2);
+  border-radius:16px;padding:24px;text-align:center;color:var(--text2);
+}
+.err-box h3{color:var(--rose);font-size:1.1rem;margin-bottom:8px;}
+.err-box p{font-size:0.85rem;font-weight:300;line-height:1.6;}
+.err-box button{margin-top:16px;}
 </style>
 </head>
 <body>
+<div class="bg-grid"></div>
+<div class="bg-radial"></div>
 
-<header>
-  <h1>BODY FAT ANALYZER</h1>
-  <p>Análisis de composición corporal y zonas de acumulación de grasa</p>
-</header>
+<div class="page">
 
-<div class="container">
-  <div class="main-grid">
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🫀</div>
+      <div class="logo-text">Health<span>Map</span></div>
+    </div>
+    <div class="header-badge">Análisis Preventivo · IA Médica</div>
+  </header>
 
-    <!-- FORM CARD -->
-    <div class="card">
-      <div class="card-title">Tus Medidas</div>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">Sin equipos · Sin laboratorio · Sin cinta métrica</div>
+    <h1>Tu salud, <em>mapeada<br>en segundos.</em></h1>
+    <p>Responde preguntas simples. La IA analiza tus hábitos, detecta riesgos y te muestra exactamente qué órganos necesitan atención.</p>
+  </div>
 
-      <div class="measure-hint">
-        <strong>📏 Cómo medir correctamente</strong>
-        Usa una cinta métrica flexible. Mide en cm sin apretar. Cintura: parte más estrecha del torso. Cadera: parte más ancha. Cuello: debajo de la nuez.
+  <!-- PROGRESS -->
+  <div class="progress-track" id="progTrack">
+    <div class="pstep active" id="ps0"><div class="pnum">1</div><div class="plbl">Tu figura</div></div>
+    <div class="pstep" id="ps1"><div class="pnum">2</div><div class="plbl">Alimentación</div></div>
+    <div class="pstep" id="ps2"><div class="pnum">3</div><div class="plbl">Bebidas</div></div>
+    <div class="pstep" id="ps3"><div class="pnum">4</div><div class="plbl">Síntomas</div></div>
+    <div class="pstep" id="ps4"><div class="pnum">★</div><div class="plbl">Diagnóstico</div></div>
+  </div>
+
+  <!-- ════════════════ PANEL 0: FIGURA ════════════════ -->
+  <div class="panel active" id="p0">
+    <div class="gcard">
+      <div class="gcard-title">PASO 1 DE 4 — TU FIGURA</div>
+
+      <div class="field">
+        <label>Sexo biológico</label>
+        <div class="vpick" id="vp-sex">
+          <div class="vopt sel" data-v="male"><span class="vi">👨</span><span class="vl">Masculino</span></div>
+          <div class="vopt" data-v="female"><span class="vi">👩</span><span class="vl">Femenino</span></div>
+        </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Sexo</label>
-          <select id="sex">
-            <option value="male">Masculino</option>
-            <option value="female">Femenino</option>
+      <div class="twoCol">
+        <div class="field">
+          <label>Rango de edad</label>
+          <select id="sel-age">
+            <option value="">Selecciona...</option>
+            <option>15–24 años</option><option>25–34 años</option>
+            <option>35–44 años</option><option>45–54 años</option>
+            <option>55–64 años</option><option>65 años o más</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Edad</label>
-          <input type="number" id="age" placeholder="años" min="10" max="100">
+        <div class="field">
+          <label>Talla de ropa habitual</label>
+          <select id="sel-clothing">
+            <option value="">Selecciona...</option>
+            <option value="xs">XS — muy delgado/a</option>
+            <option value="s">S — delgado/a</option>
+            <option value="m">M — peso normal</option>
+            <option value="l">L — sobrepeso leve</option>
+            <option value="xl">XL — sobrepeso notable</option>
+            <option value="xxl">XXL+ — obesidad</option>
+          </select>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Peso (kg)</label>
-          <input type="number" id="weight" placeholder="70" min="30" max="300" step="0.1">
-        </div>
-        <div class="form-group">
-          <label>Estatura (cm)</label>
-          <input type="number" id="height" placeholder="170" min="100" max="250">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Cintura (cm)</label>
-          <input type="number" id="waist" placeholder="82" min="40" max="200" step="0.1">
-          <div class="hint">Al nivel del ombligo</div>
-        </div>
-        <div class="form-group">
-          <label>Cuello (cm)</label>
-          <input type="number" id="neck" placeholder="38" min="20" max="80" step="0.1">
-          <div class="hint">Debajo de la nuez</div>
+      <div class="field">
+        <label>¿Dónde notas más volumen o grasa acumulada?<br><span style="font-weight:300;color:var(--text3)">Puedes seleccionar varias zonas.</span></label>
+        <div class="vpick" id="vp-zones">
+          <div class="vopt" data-v="belly"><span class="vi">🫃</span><span class="vl">Barriga</span></div>
+          <div class="vopt" data-v="flanks"><span class="vi">◀▶</span><span class="vl">Costados</span></div>
+          <div class="vopt" data-v="chest"><span class="vi">🫁</span><span class="vl">Pecho</span></div>
+          <div class="vopt" data-v="arms"><span class="vi">💪</span><span class="vl">Brazos</span></div>
+          <div class="vopt" data-v="hips"><span class="vi">🍑</span><span class="vl">Cadera</span></div>
+          <div class="vopt" data-v="thighs"><span class="vi">🦵</span><span class="vl">Muslos</span></div>
+          <div class="vopt" data-v="face"><span class="vi">😶</span><span class="vl">Cara/papada</span></div>
+          <div class="vopt" data-v="none"><span class="vi">✅</span><span class="vl">Ninguna</span></div>
         </div>
       </div>
 
-      <div class="form-group" id="hip-group">
-        <label>Cadera (cm)</label>
-        <input type="number" id="hip" placeholder="98" min="50" max="200" step="0.1">
-        <div class="hint">Parte más ancha</div>
-      </div>
-
-      <div class="form-group">
-        <label>Circunferencia de Brazo (cm) — opcional</label>
-        <input type="number" id="arm" placeholder="32" min="15" max="60" step="0.1">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Muslo (cm) — opcional</label>
-          <input type="number" id="thigh" placeholder="55" min="20" max="100" step="0.1">
-        </div>
-        <div class="form-group">
-          <label>Abdomen bajo (cm) — opcional</label>
-          <input type="number" id="abdomen" placeholder="90" min="40" max="200" step="0.1">
+      <div class="field">
+        <label>Nivel de actividad física semanal</label>
+        <div class="vpick" id="vp-exercise">
+          <div class="vopt sel" data-v="none"><span class="vi">🛋️</span><span class="vl">Sedentario</span></div>
+          <div class="vopt" data-v="light"><span class="vi">🚶</span><span class="vl">Caminatas 1-2×</span></div>
+          <div class="vopt" data-v="moderate"><span class="vi">🏃</span><span class="vl">Ejercicio 3-4×</span></div>
+          <div class="vopt" data-v="active"><span class="vi">🏋️</span><span class="vl">Muy activo 5×+</span></div>
         </div>
       </div>
 
-      <button class="btn" onclick="analyze()">ANALIZAR COMPOSICIÓN</button>
-    </div>
-
-    <!-- SILHOUETTE + RESULTS -->
-    <div>
-      <div class="card silhouette-card">
-        <div class="card-title">Mapa Corporal</div>
-
-        <div class="silhouette-wrap">
-          <svg id="bodySvg" viewBox="0 0 200 500" xmlns="http://www.w3.org/2000/svg">
-            <!-- BASE SILHOUETTE -->
-            <g id="silhouetteBase">
-              <!-- Head -->
-              <ellipse cx="100" cy="42" rx="28" ry="32" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Neck -->
-              <rect x="88" y="70" width="24" height="22" rx="4" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Torso -->
-              <path d="M 60 90 Q 48 100 46 130 Q 44 165 48 195 Q 52 220 60 228 L 140 228 Q 148 220 152 195 Q 156 165 154 130 Q 152 100 140 90 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Shoulders -->
-              <ellipse cx="54" cy="98" rx="18" ry="12" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <ellipse cx="146" cy="98" rx="18" ry="12" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Left Arm -->
-              <path d="M 40 95 Q 30 120 28 155 Q 26 175 32 195 Q 36 205 40 210 L 50 207 Q 46 196 44 178 Q 42 155 46 130 Q 48 110 56 102 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Right Arm -->
-              <path d="M 160 95 Q 170 120 172 155 Q 174 175 168 195 Q 164 205 160 210 L 150 207 Q 154 196 156 178 Q 158 155 154 130 Q 152 110 144 102 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Hips/Pelvis -->
-              <path d="M 52 225 Q 44 235 42 250 Q 40 265 48 275 L 152 275 Q 160 265 158 250 Q 156 235 148 225 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Left Thigh -->
-              <path d="M 52 268 Q 44 285 43 315 Q 42 345 46 370 L 92 370 Q 94 345 92 315 Q 90 285 96 268 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Right Thigh -->
-              <path d="M 148 268 Q 156 285 157 315 Q 158 345 154 370 L 108 370 Q 106 345 108 315 Q 110 285 104 268 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Left Calf -->
-              <path d="M 48 368 Q 44 385 44 410 Q 44 435 48 455 L 88 455 Q 90 435 90 410 Q 90 385 90 368 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Right Calf -->
-              <path d="M 152 368 Q 156 385 156 410 Q 156 435 152 455 L 112 455 Q 110 435 110 410 Q 110 385 110 368 Z" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <!-- Feet -->
-              <ellipse cx="68" cy="460" rx="22" ry="10" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-              <ellipse cx="132" cy="460" rx="22" ry="10" fill="#2a2f3d" stroke="#3a4050" stroke-width="1.5"/>
-            </g>
-
-            <!-- FAT ZONES (overlays) -->
-            <!-- Abdomen/Belly fat -->
-            <ellipse id="zone-belly" class="fat-zone" cx="100" cy="168" rx="46" ry="42" fill="#ff5c35"/>
-            <!-- Love handles / flanks -->
-            <ellipse id="zone-flanks-l" class="fat-zone" cx="50" cy="180" rx="16" ry="30" fill="#ff5c35"/>
-            <ellipse id="zone-flanks-r" class="fat-zone" cx="150" cy="180" rx="16" ry="30" fill="#ff5c35"/>
-            <!-- Chest/Pecs -->
-            <ellipse id="zone-chest" class="fat-zone" cx="100" cy="118" rx="38" ry="24" fill="#ff5c35"/>
-            <!-- Hips/Butt -->
-            <ellipse id="zone-hips" class="fat-zone" cx="100" cy="255" rx="52" ry="26" fill="#ff5c35"/>
-            <!-- Thighs -->
-            <ellipse id="zone-thighs-l" class="fat-zone" cx="68" cy="320" rx="24" ry="48" fill="#ff5c35"/>
-            <ellipse id="zone-thighs-r" class="fat-zone" cx="132" cy="320" rx="24" ry="48" fill="#ff5c35"/>
-            <!-- Arms -->
-            <ellipse id="zone-arms-l" class="fat-zone" cx="37" cy="152" rx="12" ry="38" fill="#ff5c35"/>
-            <ellipse id="zone-arms-r" class="fat-zone" cx="163" cy="152" rx="12" ry="38" fill="#ff5c35"/>
-            <!-- Face/Neck -->
-            <ellipse id="zone-face" class="fat-zone" cx="100" cy="42" rx="28" ry="32" fill="#ff5c35"/>
-            <!-- Back/lower back -->
-            <ellipse id="zone-back" class="fat-zone" cx="100" cy="200" rx="40" ry="18" fill="#ff5c35"/>
-
-            <!-- Body outline (always on top) -->
-            <g id="silhouetteOutline" fill="none" stroke="#4a5165" stroke-width="1" opacity="0.6">
-              <!-- Muscle lines subtle -->
-              <line x1="100" y1="92" x2="100" y2="225" stroke-dasharray="2,4" opacity="0.3"/>
-              <path d="M 70 130 Q 100 140 130 130" opacity="0.3"/>
-              <path d="M 65 170 Q 100 185 135 170" opacity="0.3"/>
-            </g>
-          </svg>
-        </div>
-
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--low)"></div>Bajo</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--medium)"></div>Moderado</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--high)"></div>Alto</div>
-          <div class="legend-item"><div class="legend-dot" style="background:var(--critical)"></div>Crítico</div>
-        </div>
-      </div>
-
-      <!-- RESULTS -->
-      <div id="results" class="results-section">
-        <div class="bmi-row">
-          <div class="mini-stat">
-            <div class="mini-stat-val" id="imc-val">—</div>
-            <div class="mini-stat-lbl">IMC</div>
-          </div>
-          <div class="mini-stat">
-            <div class="mini-stat-val" id="fat-mass-val">—</div>
-            <div class="mini-stat-lbl">Kg de grasa</div>
-          </div>
-        </div>
-
-        <div class="result-main">
-          <div class="result-pct" id="fat-pct">—%</div>
-          <div class="result-label">Porcentaje de Grasa Corporal</div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" id="fat-bar" style="width:0%"></div>
-          </div>
-          <div class="result-category" id="fat-cat">—</div>
-        </div>
-
-        <div class="zone-list" id="zone-list"></div>
-
-        <div class="tip-box" id="tip-box"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="go(1)">Continuar →</button>
       </div>
     </div>
-
   </div>
-</div>
+
+  <!-- ════════════════ PANEL 1: ALIMENTACIÓN ════════════════ -->
+  <div class="panel" id="p1">
+    <div class="gcard">
+      <div class="gcard-title">PASO 2 DE 4 — ALIMENTACIÓN</div>
+
+      <div class="field">
+        <label>¿Qué alimentos consumes con frecuencia? <span style="font-weight:300;color:var(--text3)">(Selecciona todos los que aplican)</span></label>
+        <div class="chips" id="ch-food">
+          <div class="chip danger" data-v="fastfood">🍔 Comida rápida</div>
+          <div class="chip danger" data-v="fried">🍟 Frituras</div>
+          <div class="chip danger" data-v="sweets">🍰 Dulces/pasteles</div>
+          <div class="chip warn" data-v="bread">🍞 Pan blanco/harinas</div>
+          <div class="chip warn" data-v="rice">🍚 Arroz/pasta en exceso</div>
+          <div class="chip warn" data-v="redmeat">🥩 Carne roja diaria</div>
+          <div class="chip warn" data-v="salt">🧂 Mucha sal/embutidos</div>
+          <div class="chip warn" data-v="dairy">🧀 Lácteos en exceso</div>
+          <div class="chip" data-v="chicken">🍗 Pollo/pavo</div>
+          <div class="chip" data-v="fish">🐟 Pescado</div>
+          <div class="chip" data-v="veggies">🥦 Verduras frecuentes</div>
+          <div class="chip" data-v="fruits">🍎 Frutas frescas</div>
+          <div class="chip" data-v="legumes">🫘 Legumbres</div>
+          <div class="chip" data-v="eggs">🥚 Huevos</div>
+          <div class="chip" data-v="nuts">🥜 Frutos secos</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>¿Con qué frecuencia comes ultraprocesados?</label>
+        <div class="vpick" id="vp-proc">
+          <div class="vopt" data-v="never"><span class="vi">🚫</span><span class="vl">Casi nunca</span></div>
+          <div class="vopt" data-v="sometimes"><span class="vi">🤷</span><span class="vl">A veces (1-2/sem)</span></div>
+          <div class="vopt" data-v="often"><span class="vi">⚠️</span><span class="vl">Seguido (3-5/sem)</span></div>
+          <div class="vopt sel" data-v="daily"><span class="vi">🔥</span><span class="vl">Casi a diario</span></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="go(0)">← Atrás</button>
+        <button class="btn btn-primary" onclick="go(2)">Continuar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ PANEL 2: BEBIDAS ════════════════ -->
+  <div class="panel" id="p2">
+    <div class="gcard">
+      <div class="gcard-title">PASO 3 DE 4 — BEBIDAS Y HÁBITOS</div>
+
+      <div class="field">
+        <label>¿Qué bebidas consumes habitualmente?</label>
+        <div class="chips" id="ch-drink">
+          <div class="chip danger" data-v="alcohol_daily">🍺 Alcohol a diario</div>
+          <div class="chip warn" data-v="alcohol_weekly">🍷 Alcohol varios días/semana</div>
+          <div class="chip" data-v="alcohol_social">🥂 Alcohol ocasional</div>
+          <div class="chip danger" data-v="energy">⚡ Energizantes</div>
+          <div class="chip danger" data-v="soda_daily">🥤 Gaseosa/refresco diario</div>
+          <div class="chip warn" data-v="soda_sometimes">🫧 Gaseosa a veces</div>
+          <div class="chip warn" data-v="coffee_excess">☕ Más de 4 cafés/día</div>
+          <div class="chip" data-v="coffee_mod">☕ 1–2 cafés/día</div>
+          <div class="chip danger" data-v="water_low">🏜️ Poca agua (menos de 1L)</div>
+          <div class="chip" data-v="water_ok">💧 Agua suficiente (1.5L+)</div>
+          <div class="chip" data-v="tea">🍵 Té natural</div>
+          <div class="chip danger" data-v="juice_box">🧃 Jugos de caja</div>
+          <div class="chip" data-v="juice_natural">🍊 Jugos naturales</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tabaco</label>
+        <div class="vpick" id="vp-smoke">
+          <div class="vopt sel" data-v="never"><span class="vi">✅</span><span class="vl">Nunca</span></div>
+          <div class="vopt" data-v="past"><span class="vi">🕰️</span><span class="vl">Antes, ya dejé</span></div>
+          <div class="vopt" data-v="occasional"><span class="vi">🚬</span><span class="vl">Ocasionalmente</span></div>
+          <div class="vopt" data-v="daily"><span class="vi">💨</span><span class="vl">Diariamente</span></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="go(1)">← Atrás</button>
+        <button class="btn btn-primary" onclick="go(3)">Continuar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ PANEL 3: SÍNTOMAS ════════════════ -->
+  <div class="panel" id="p3">
+    <div class="gcard">
+      <div class="gcard-title">PASO 4 DE 4 — SÍNTOMAS FRECUENTES</div>
+
+      <div class="field">
+        <label>¿Qué sientes con frecuencia? <span style="font-weight:300;color:var(--text3)">(Selecciona todo lo que aplique)</span></label>
+        <div class="chips" id="ch-sym">
+          <div class="chip" data-v="fatigue">😴 Cansancio excesivo</div>
+          <div class="chip" data-v="heartburn">🔥 Acidez/reflujo</div>
+          <div class="chip" data-v="bloating">🎈 Hinchazón abdominal</div>
+          <div class="chip" data-v="headache">🤕 Dolores de cabeza</div>
+          <div class="chip" data-v="thirst">🥤 Sed constante</div>
+          <div class="chip" data-v="urination">🚽 Orinar mucho</div>
+          <div class="chip" data-v="joint_pain">🦴 Dolor articular</div>
+          <div class="chip" data-v="shortbreath">💨 Me canso al subir escaleras</div>
+          <div class="chip" data-v="chest_pain">💔 Presión en el pecho</div>
+          <div class="chip" data-v="vision">👁️ Vista borrosa</div>
+          <div class="chip" data-v="skin">🟡 Piel amarilla o muy seca</div>
+          <div class="chip" data-v="constipation">⚠️ Estreñimiento frecuente</div>
+          <div class="chip" data-v="appetite">🍽️ Hambre constante</div>
+          <div class="chip" data-v="memory">🧠 Olvidos / niebla mental</div>
+          <div class="chip" data-v="snoring">😤 Ronquidos / apnea</div>
+          <div class="chip" data-v="swollen">🦵 Piernas/tobillos hinchados</div>
+          <div class="chip" data-v="none">✅ Sin síntomas</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="go(2)">← Atrás</button>
+        <button class="btn btn-big" onclick="runAI()" style="flex:1">
+          🔬 Analizar mi salud ahora
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════ PANEL 4: RESULTADOS ════════════════ -->
+  <div class="panel" id="p4">
+
+    <!-- LOADING -->
+    <div class="loading-state" id="loadingUI">
+      <div class="pulse-ring"></div>
+      <h3>Analizando tu perfil de salud</h3>
+      <p>La IA está evaluando tus hábitos, identificando riesgos y mapeando órganos<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></p>
+    </div>
+
+    <!-- ERROR -->
+    <div class="err-box" id="errUI" style="display:none">
+      <h3>No se pudo conectar con el análisis</h3>
+      <p>Hubo un problema al procesar tu análisis. Verifica tu conexión a internet e intenta de nuevo.</p>
+      <button class="btn btn-ghost" onclick="go(3)">← Volver e intentar de nuevo</button>
+    </div>
+
+    <!-- RESULT CONTENT -->
+    <div id="resultUI" style="display:none">
+      <!-- SCORE -->
+      <div class="score-card" id="scoreCard"></div>
+
+      <div class="results-wrap">
+        <!-- MAP -->
+        <div>
+          <div class="map-card">
+            <div class="map-header">
+              <div class="map-title">MAPA CORPORAL</div>
+              <div class="map-status" id="mapStatus">Escaneando</div>
+            </div>
+            <div class="svg-wrap">
+              <div class="scan-anim"></div>
+              <svg id="bodySvg" viewBox="0 0 220 540" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="gBody" cx="50%" cy="40%" r="60%">
+                    <stop offset="0%" stop-color="#1e2d45"/>
+                    <stop offset="100%" stop-color="#0e1520"/>
+                  </radialGradient>
+                  <radialGradient id="gBodyEdge" cx="50%" cy="50%" r="50%">
+                    <stop offset="70%" stop-color="transparent"/>
+                    <stop offset="100%" stop-color="rgba(0,212,255,0.08)"/>
+                  </radialGradient>
+                  <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                  <filter id="softglow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+
+                <!-- ── BODY BASE ── -->
+                <!-- Head -->
+                <ellipse cx="110" cy="45" rx="30" ry="34" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- Ear details -->
+                <ellipse cx="81" cy="47" rx="5" ry="8" fill="#162030" stroke="#2a3d58" stroke-width="1"/>
+                <ellipse cx="139" cy="47" rx="5" ry="8" fill="#162030" stroke="#2a3d58" stroke-width="1"/>
+                <!-- Neck -->
+                <path d="M96 76 Q96 88 93 96 L127 96 Q124 88 124 76Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- Trapezius/shoulders -->
+                <path d="M60 100 Q50 95 42 108 Q36 118 38 130 Q45 126 52 116 Q62 105 78 99Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <path d="M160 100 Q170 95 178 108 Q184 118 182 130 Q175 126 168 116 Q158 105 142 99Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- Collar bones hint -->
+                <line x1="93" y1="98" x2="68" y2="107" stroke="#2a3d58" stroke-width="1" opacity="0.7"/>
+                <line x1="127" y1="98" x2="152" y2="107" stroke="#2a3d58" stroke-width="1" opacity="0.7"/>
+                <!-- TORSO -->
+                <path d="M65 97 Q50 105 47 135 Q45 168 48 198 Q52 224 62 234 L158 234 Q168 224 172 198 Q175 168 173 135 Q170 105 155 97 Q140 93 110 92 Q80 93 65 97Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- Pec definition -->
+                <path d="M72 115 Q90 123 110 120 Q90 135 72 130Z" fill="#162030" opacity="0.4"/>
+                <path d="M148 115 Q130 123 110 120 Q130 135 148 130Z" fill="#162030" opacity="0.4"/>
+                <!-- Abs hint lines -->
+                <line x1="110" y1="125" x2="110" y2="228" stroke="#253550" stroke-width="1" stroke-dasharray="3,5" opacity="0.5"/>
+                <path d="M80 148 Q110 155 140 148" fill="none" stroke="#253550" stroke-width="0.8" opacity="0.4"/>
+                <path d="M78 170 Q110 178 142 170" fill="none" stroke="#253550" stroke-width="0.8" opacity="0.4"/>
+                <path d="M78 192 Q110 200 142 192" fill="none" stroke="#253550" stroke-width="0.8" opacity="0.4"/>
+                <!-- LEFT ARM -->
+                <path d="M42 110 Q30 130 26 165 Q24 188 28 210 Q32 222 40 230 L52 225 Q46 212 44 192 Q40 168 44 143 Q46 125 56 113Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- LEFT FOREARM -->
+                <path d="M40 228 Q34 240 33 260 Q32 278 35 290 L50 288 Q48 275 48 258 Q47 242 52 228Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- LEFT HAND -->
+                <ellipse cx="42" cy="296" rx="10" ry="14" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- RIGHT ARM -->
+                <path d="M178 110 Q190 130 194 165 Q196 188 192 210 Q188 222 180 230 L168 225 Q174 212 176 192 Q180 168 176 143 Q174 125 164 113Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- RIGHT FOREARM -->
+                <path d="M180 228 Q186 240 187 260 Q188 278 185 290 L170 288 Q172 275 172 258 Q173 242 168 228Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- RIGHT HAND -->
+                <ellipse cx="178" cy="296" rx="10" ry="14" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- PELVIS/HIPS -->
+                <path d="M55 230 Q44 242 42 260 Q40 278 48 290 Q56 300 70 305 L150 305 Q164 300 172 290 Q180 278 178 260 Q176 242 165 230Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- Pelvis bone hint -->
+                <path d="M70 255 Q110 248 150 255" fill="none" stroke="#253550" stroke-width="1" opacity="0.5"/>
+                <!-- LEFT THIGH -->
+                <path d="M56 298 Q47 318 46 348 Q45 378 48 400 L94 400 Q96 378 94 348 Q92 318 100 298Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- RIGHT THIGH -->
+                <path d="M164 298 Q173 318 174 348 Q175 378 172 400 L126 400 Q124 378 126 348 Q128 318 120 298Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- Thigh separation -->
+                <line x1="110" y1="300" x2="110" y2="400" stroke="#0e1520" stroke-width="3"/>
+                <!-- LEFT KNEE -->
+                <ellipse cx="71" cy="405" rx="20" ry="10" fill="#162030" stroke="#2a3d58" stroke-width="1"/>
+                <!-- RIGHT KNEE -->
+                <ellipse cx="149" cy="405" rx="20" ry="10" fill="#162030" stroke="#2a3d58" stroke-width="1"/>
+                <!-- LEFT CALF -->
+                <path d="M52 413 Q48 432 48 456 Q48 476 52 490 L90 490 Q92 476 92 456 Q92 432 90 413Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- RIGHT CALF -->
+                <path d="M168 413 Q172 432 172 456 Q172 476 168 490 L130 490 Q128 476 128 456 Q128 432 130 413Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- LEFT FOOT -->
+                <path d="M50 488 Q44 494 42 500 Q44 508 54 510 L88 508 Q94 504 92 498 Q90 490 90 488Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+                <!-- RIGHT FOOT -->
+                <path d="M170 488 Q176 494 178 500 Q176 508 166 510 L132 508 Q126 504 128 498 Q130 490 130 488Z" fill="url(#gBody)" stroke="#2a3d58" stroke-width="1.5"/>
+
+                <!-- ── FAT ZONES (colored overlays) ── -->
+                <!-- Belly -->
+                <ellipse id="fz-belly" class="zone" cx="110" cy="182" rx="52" ry="46" fill="#ff4d6d"/>
+                <!-- Flanks L -->
+                <ellipse id="fz-fl" class="zone" cx="53" cy="192" rx="18" ry="34" fill="#ff4d6d"/>
+                <!-- Flanks R -->
+                <ellipse id="fz-fr" class="zone" cx="167" cy="192" rx="18" ry="34" fill="#ff4d6d"/>
+                <!-- Chest -->
+                <ellipse id="fz-chest" class="zone" cx="110" cy="126" rx="42" ry="26" fill="#ff4d6d"/>
+                <!-- Arms L -->
+                <ellipse id="fz-al" class="zone" cx="38" cy="165" rx="13" ry="42" fill="#ff4d6d"/>
+                <!-- Arms R -->
+                <ellipse id="fz-ar" class="zone" cx="182" cy="165" rx="13" ry="42" fill="#ff4d6d"/>
+                <!-- Hips -->
+                <ellipse id="fz-hips" class="zone" cx="110" cy="272" rx="58" ry="28" fill="#ff4d6d"/>
+                <!-- Thighs L -->
+                <ellipse id="fz-tl" class="zone" cx="72" cy="350" rx="27" ry="52" fill="#ff4d6d"/>
+                <!-- Thighs R -->
+                <ellipse id="fz-tr" class="zone" cx="148" cy="350" rx="27" ry="52" fill="#ff4d6d"/>
+                <!-- Face -->
+                <ellipse id="fz-face" class="zone" cx="110" cy="45" rx="30" ry="34" fill="#ff4d6d"/>
+
+                <!-- ── ORGAN ZONES (anatomical positions) ── -->
+                <!-- Heart — upper left torso -->
+                <ellipse id="oz-heart" class="ohlt" cx="94" cy="125" rx="18" ry="16" fill="#ff4d6d" filter="url(#softglow)"/>
+                <!-- Lungs L -->
+                <ellipse id="oz-lung-l" class="ohlt" cx="80" cy="140" rx="16" ry="26" fill="#4cb8ff" filter="url(#softglow)"/>
+                <!-- Lungs R -->
+                <ellipse id="oz-lung-r" class="ohlt" cx="140" cy="140" rx="16" ry="26" fill="#4cb8ff" filter="url(#softglow)"/>
+                <!-- Liver — upper right abdomen -->
+                <path id="oz-liver" class="ohlt" d="M118 158 Q148 152 155 168 Q158 182 150 195 Q136 202 118 195 Q108 185 110 170Z" fill="#ffb347" filter="url(#softglow)"/>
+                <!-- Stomach — center -->
+                <ellipse id="oz-stomach" class="ohlt" cx="96" cy="170" rx="18" ry="14" fill="#7c6fff" filter="url(#softglow)"/>
+                <!-- Pancreas — behind stomach -->
+                <path id="oz-pancreas" class="ohlt" d="M84 180 Q110 175 130 180 Q128 190 110 192 Q90 192Z" fill="#c080ff" filter="url(#softglow)"/>
+                <!-- Kidneys L -->
+                <ellipse id="oz-kid-l" class="ohlt" cx="82" cy="202" rx="11" ry="16" fill="#ff8c69" filter="url(#softglow)"/>
+                <!-- Kidneys R -->
+                <ellipse id="oz-kid-r" class="ohlt" cx="138" cy="202" rx="11" ry="16" fill="#ff8c69" filter="url(#softglow)"/>
+                <!-- Colon/intestines -->
+                <path id="oz-colon" class="ohlt" d="M68 205 Q68 230 110 238 Q152 230 152 205 Q110 212 68 205Z" fill="#50c878" filter="url(#softglow)"/>
+                <!-- Brain -->
+                <ellipse id="oz-brain" class="ohlt" cx="110" cy="38" rx="26" ry="22" fill="#ffb3c6" filter="url(#softglow)"/>
+                <!-- Arteries (aorta) -->
+                <path id="oz-arteries" class="ohlt" d="M104 105 Q104 230 108 290" fill="none" stroke="#ff4560" stroke-width="8" stroke-linecap="round" filter="url(#glow)"/>
+
+                <!-- ── BODY EDGE GLOW ── -->
+                <ellipse cx="110" cy="280" rx="120" ry="280" fill="url(#gBodyEdge)" opacity="0.5"/>
+
+                <!-- ── DETAIL LINES (muscle/anatomy hints) ── -->
+                <line x1="110" y1="97" x2="110" y2="234" stroke="#2a3d58" stroke-width="0.8" stroke-dasharray="2,6" opacity="0.4"/>
+              </svg>
+            </div>
+
+            <div class="map-legend">
+              <div class="leg"><div class="leg-dot" style="background:#ff4d6d"></div>Grasa</div>
+              <div class="leg"><div class="leg-dot" style="background:#ff4d6d;opacity:0.5"></div>Corazón</div>
+              <div class="leg"><div class="leg-dot" style="background:#ffb347"></div>Hígado</div>
+              <div class="leg"><div class="leg-dot" style="background:#4cb8ff"></div>Pulmones</div>
+              <div class="leg"><div class="leg-dot" style="background:#c080ff"></div>Páncreas</div>
+              <div class="leg"><div class="leg-dot" style="background:#50c878"></div>Colon</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: organs + tips -->
+        <div>
+          <div class="organs-title">ÓRGANOS EN RIESGO</div>
+          <div class="organ-list" id="organList"></div>
+          <div class="tip-box" id="tipBox" style="display:none"></div>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:36px;">
+        <button class="btn btn-ghost" onclick="restart()">← Nuevo análisis</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
 
 <script>
-const sexEl = document.getElementById('sex');
-const hipGroup = document.getElementById('hip-group');
+/* ── STATE ── */
+const S = {
+  sex:'male', age:'', clothing:'', zones:[], exercise:'none',
+  foods:[], proc:'daily', drinks:[], smoke:'never', symptoms:[]
+};
 
-sexEl.addEventListener('change', () => {
-  hipGroup.style.display = sexEl.value === 'female' ? 'block' : 'none';
-});
-hipGroup.style.display = 'none';
+/* ── NAVIGATION ── */
+let cur = 0;
+function go(n) {
+  document.getElementById(`p${cur}`).classList.remove('active');
+  document.getElementById(`ps${cur}`).classList.remove('active');
+  document.getElementById(`ps${cur}`).classList.add('done');
+  cur = n;
+  document.getElementById(`p${n}`).classList.add('active');
+  document.getElementById(`ps${n}`).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-function analyze() {
-  const sex = sexEl.value;
-  const age = parseFloat(document.getElementById('age').value);
-  const weight = parseFloat(document.getElementById('weight').value);
-  const height = parseFloat(document.getElementById('height').value);
-  const waist = parseFloat(document.getElementById('waist').value);
-  const neck = parseFloat(document.getElementById('neck').value);
-  const hip = parseFloat(document.getElementById('hip').value);
-  const arm = parseFloat(document.getElementById('arm').value) || null;
-  const thigh = parseFloat(document.getElementById('thigh').value) || null;
-  const abdomen = parseFloat(document.getElementById('abdomen').value) || null;
+/* ── PICKERS (single) ── */
+function initSingle(id, key) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelectorAll('.vopt').forEach(o => {
+    if (o.classList.contains('sel')) S[key] = o.dataset.v;
+    o.addEventListener('click', () => {
+      el.querySelectorAll('.vopt').forEach(x => x.classList.remove('sel'));
+      o.classList.add('sel');
+      S[key] = o.dataset.v;
+    });
+  });
+}
 
-  if (!age || !weight || !height || !waist || !neck) {
-    alert('Por favor completa: edad, peso, estatura, cintura y cuello.');
-    return;
+/* ── PICKERS (multi) ── */
+function initMulti(id, key) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelectorAll('.vopt').forEach(o => {
+    o.addEventListener('click', () => {
+      o.classList.toggle('sel');
+      const v = o.dataset.v;
+      S[key] = S[key].includes(v) ? S[key].filter(x=>x!==v) : [...S[key], v];
+    });
+  });
+}
+
+/* ── CHIPS ── */
+function initChips(id, key) {
+  document.getElementById(id).querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      c.classList.toggle('sel');
+      const v = c.dataset.v;
+      S[key] = S[key].includes(v) ? S[key].filter(x=>x!==v) : [...S[key], v];
+    });
+  });
+}
+
+initSingle('vp-sex','sex');
+initMulti('vp-zones','zones');
+initSingle('vp-exercise','exercise');
+initChips('ch-food','foods');
+initSingle('vp-proc','proc');
+initChips('ch-drink','drinks');
+initSingle('vp-smoke','smoke');
+initChips('ch-sym','symptoms');
+
+document.getElementById('sel-age').addEventListener('change', e => S.age = e.target.value);
+document.getElementById('sel-clothing').addEventListener('change', e => S.clothing = e.target.value);
+
+/* ── AI CALL ── */
+async function runAI() {
+  go(4);
+  document.getElementById('loadingUI').style.display = 'flex';
+  document.getElementById('errUI').style.display = 'none';
+  document.getElementById('resultUI').style.display = 'none';
+
+  const prompt = buildPrompt();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1200,
+        system: `Eres un médico especialista en medicina preventiva. Analiza el perfil del usuario y responde ÚNICAMENTE con un objeto JSON válido, sin texto extra, sin markdown, sin backticks. La estructura es exactamente:
+{"score":número_0_a_100,"scoreLabel":"Excelente|Bueno|Regular|Preocupante|Crítico","summary":"2 frases sobre el estado general","organs":[{"id":"liver|heart|lungs|kidneys|pancreas|stomach|colon|brain|arteries","name":"nombre en español","emoji":"emoji","risk":"low|medium|high|critical","diseases":["enfermedad1","enfermedad2"],"description":"2 frases explicando riesgo concreto","fatZones":["belly|flanks|chest|arms|hips|thighs|face"]}],"tip":"3 recomendaciones concretas separadas por punto y seguido"}
+Reglas: incluye solo órganos con risk medium/high/critical. Máximo 6 órganos. Sé preciso y honesto. Las enfermedades deben ser reales y relevantes a los hábitos descritos.`,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const raw = (data.content || []).map(b => b.text || '').join('');
+
+    // robust JSON extraction
+    let json = raw.trim();
+    const m = json.match(/\{[\s\S]*\}/);
+    if (m) json = m[0];
+    const result = JSON.parse(json);
+    renderResult(result);
+  } catch(e) {
+    console.error('AI error:', e);
+    document.getElementById('loadingUI').style.display = 'none';
+    document.getElementById('errUI').style.display = 'block';
   }
-  if (sex === 'female' && !hip) {
-    alert('Para mujeres, ingresa la medida de cadera.');
-    return;
-  }
+}
 
-  // US Navy Method
-  let bodyFat;
-  const heightCm = height;
-  if (sex === 'male') {
-    bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(heightCm)) - 450;
-  } else {
-    bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waist + hip - neck) + 0.22100 * Math.log10(heightCm)) - 450;
-  }
+function buildPrompt() {
+  const foodNames = {fastfood:'comida rápida',fried:'frituras',sweets:'dulces',bread:'pan blanco/harinas',rice:'arroz/pasta en exceso',redmeat:'carne roja diaria',salt:'mucha sal/embutidos',dairy:'lácteos en exceso',chicken:'pollo',fish:'pescado',veggies:'verduras',fruits:'frutas',legumes:'legumbres',eggs:'huevos',nuts:'frutos secos'};
+  const drinkNames = {alcohol_daily:'alcohol diario',alcohol_weekly:'alcohol varios días/sem',alcohol_social:'alcohol ocasional',energy:'energizantes',soda_daily:'gaseosa diaria',soda_sometimes:'gaseosa a veces',coffee_excess:'+4 cafés/día',coffee_mod:'1-2 cafés/día',water_low:'poca agua (<1L)',water_ok:'agua suficiente',tea:'té natural',juice_box:'jugos de caja',juice_natural:'jugos naturales'};
+  const symNames = {fatigue:'cansancio excesivo',heartburn:'acidez/reflujo',bloating:'hinchazón abdominal',headache:'dolores de cabeza',thirst:'sed constante',urination:'orinar mucho',joint_pain:'dolor articular',shortbreath:'falta de aire fácil',chest_pain:'presión en pecho',vision:'vista borrosa',skin:'piel amarilla/seca',constipation:'estreñimiento',appetite:'hambre constante',memory:'niebla mental/olvidos',snoring:'ronquidos/apnea',swollen:'piernas/tobillos hinchados'};
+  const clothingMap = {xs:'muy delgado/a',s:'delgado/a',m:'peso normal',l:'sobrepeso leve',xl:'sobrepeso notable',xxl:'obesidad'};
+  const exerciseMap = {none:'sedentario',light:'caminatas 1-2×/sem',moderate:'ejercicio 3-4×/sem',active:'muy activo 5×+/sem'};
+  const procMap = {never:'casi nunca',sometimes:'a veces',often:'seguido',daily:'casi a diario'};
 
-  bodyFat = Math.max(3, Math.min(65, bodyFat));
-  const bmi = weight / ((height / 100) ** 2);
-  const fatMass = (bodyFat / 100) * weight;
-  const leanMass = weight - fatMass;
+  return [
+    `Sexo: ${S.sex==='male'?'Hombre':'Mujer'}`,
+    `Edad: ${S.age||'no especificada'}`,
+    `Complexión/talla: ${clothingMap[S.clothing]||'no especificada'}`,
+    `Zonas con grasa visible: ${S.zones.join(', ')||'ninguna especificada'}`,
+    `Actividad física: ${exerciseMap[S.exercise]}`,
+    `Alimentos frecuentes: ${S.foods.map(f=>foodNames[f]||f).join(', ')||'no especificados'}`,
+    `Ultraprocesados: ${procMap[S.proc]}`,
+    `Bebidas habituales: ${S.drinks.map(d=>drinkNames[d]||d).join(', ')||'no especificadas'}`,
+    `Tabaco: ${S.smoke}`,
+    `Síntomas frecuentes: ${S.symptoms.map(s=>symNames[s]||s).join(', ')||'ninguno'}`
+  ].join('\n');
+}
 
-  // Determine category
-  let category, catColor;
-  if (sex === 'male') {
-    if (bodyFat < 6)        { category = 'ESENCIAL';    catColor = '#4ecdc4'; }
-    else if (bodyFat < 14)  { category = 'ATLÉTICO';    catColor = '#4ecdc4'; }
-    else if (bodyFat < 18)  { category = 'FITNESS';     catColor = '#a8e6cf'; }
-    else if (bodyFat < 25)  { category = 'PROMEDIO';    catColor = '#ffb347'; }
-    else if (bodyFat < 32)  { category = 'ALTO';        catColor = '#ff5c35'; }
-    else                    { category = 'OBESIDAD';    catColor = '#ff1744'; }
-  } else {
-    if (bodyFat < 14)       { category = 'ESENCIAL';    catColor = '#4ecdc4'; }
-    else if (bodyFat < 21)  { category = 'ATLÉTICA';    catColor = '#4ecdc4'; }
-    else if (bodyFat < 25)  { category = 'FITNESS';     catColor = '#a8e6cf'; }
-    else if (bodyFat < 32)  { category = 'PROMEDIO';    catColor = '#ffb347'; }
-    else if (bodyFat < 39)  { category = 'ALTO';        catColor = '#ff5c35'; }
-    else                    { category = 'OBESIDAD';    catColor = '#ff1744'; }
-  }
+/* ── RENDER ── */
+function renderResult(r) {
+  document.getElementById('loadingUI').style.display = 'none';
+  document.getElementById('resultUI').style.display = 'block';
 
-  // Zone analysis
-  const waistHipRatio = sex === 'male' ? waist / (hip || waist * 0.9) : waist / hip;
-  const waistHeightRatio = waist / height;
-  const bmiZone = bmi;
+  // Score color
+  const sc = r.score >= 80 ? '#00e5a0' : r.score >= 60 ? '#ffa726' : r.score >= 40 ? '#ff4d6d' : '#ff1744';
+  const circ = 2*Math.PI*36;
+  const fill = (r.score/100)*circ;
 
-  // Belly / abdominal fat
-  let bellyLevel = 'none';
-  if (waist > (sex === 'male' ? 102 : 88)) bellyLevel = 'critical';
-  else if (waist > (sex === 'male' ? 94 : 80)) bellyLevel = 'high';
-  else if (waist > (sex === 'male' ? 84 : 72)) bellyLevel = 'medium';
-  else if (bodyFat > (sex === 'male' ? 18 : 26)) bellyLevel = 'low';
-
-  // Flanks
-  let flanksLevel = 'none';
-  if (waistHipRatio > (sex === 'male' ? 1.0 : 0.90)) flanksLevel = 'critical';
-  else if (waistHipRatio > (sex === 'male' ? 0.95 : 0.85)) flanksLevel = 'high';
-  else if (waistHipRatio > (sex === 'male' ? 0.90 : 0.80)) flanksLevel = 'medium';
-  else if (bodyFat > (sex === 'male' ? 20 : 28)) flanksLevel = 'low';
-
-  // Chest (male) / arms
-  let armsLevel = 'none';
-  if (arm) {
-    const armRatio = arm / height;
-    if (armRatio > 0.22) armsLevel = 'critical';
-    else if (armRatio > 0.20) armsLevel = 'high';
-    else if (armRatio > 0.18) armsLevel = 'medium';
-    else if (bodyFat > (sex === 'male' ? 22 : 30)) armsLevel = 'low';
-  } else if (bodyFat > (sex === 'male' ? 25 : 33)) {
-    armsLevel = 'medium';
-  } else if (bodyFat > (sex === 'male' ? 20 : 28)) {
-    armsLevel = 'low';
-  }
-
-  // Chest
-  let chestLevel = 'none';
-  if (sex === 'male') {
-    if (bodyFat > 30) chestLevel = 'critical';
-    else if (bodyFat > 25) chestLevel = 'high';
-    else if (bodyFat > 20) chestLevel = 'medium';
-    else if (bodyFat > 16) chestLevel = 'low';
-  } else {
-    if (bodyFat > 38) chestLevel = 'high';
-    else if (bodyFat > 32) chestLevel = 'medium';
-    else if (bodyFat > 26) chestLevel = 'low';
-  }
-
-  // Hips/Glutes
-  let hipsLevel = 'none';
-  if (sex === 'female') {
-    if (hip > 115) hipsLevel = 'critical';
-    else if (hip > 105) hipsLevel = 'high';
-    else if (hip > 98) hipsLevel = 'medium';
-    else if (bodyFat > 28) hipsLevel = 'low';
-  } else {
-    if (bodyFat > 28) hipsLevel = 'medium';
-    else if (bodyFat > 22) hipsLevel = 'low';
-  }
-
-  // Thighs
-  let thighsLevel = 'none';
-  if (thigh) {
-    const thighRatio = thigh / height;
-    if (thighRatio > 0.38) thighsLevel = 'critical';
-    else if (thighRatio > 0.35) thighsLevel = 'high';
-    else if (thighRatio > 0.32) thighsLevel = 'medium';
-    else if (bodyFat > (sex === 'male' ? 22 : 30)) thighsLevel = 'low';
-  } else if (sex === 'female') {
-    if (bodyFat > 38) thighsLevel = 'high';
-    else if (bodyFat > 32) thighsLevel = 'medium';
-    else if (bodyFat > 26) thighsLevel = 'low';
-  } else {
-    if (bodyFat > 28) thighsLevel = 'low';
-  }
-
-  // Face
-  let faceLevel = 'none';
-  if (bmi > 35) faceLevel = 'high';
-  else if (bmi > 30) faceLevel = 'medium';
-  else if (bmi > 27) faceLevel = 'low';
-
-  // Lower back
-  let backLevel = 'none';
-  if (abdomen) {
-    const diff = abdomen - waist;
-    if (diff > 15) backLevel = 'critical';
-    else if (diff > 10) backLevel = 'high';
-    else if (diff > 5) backLevel = 'medium';
-    else backLevel = 'low';
-  } else if (bodyFat > (sex === 'male' ? 24 : 32)) {
-    backLevel = 'medium';
-  } else if (bodyFat > (sex === 'male' ? 18 : 26)) {
-    backLevel = 'low';
-  }
-
-  // Apply to SVG
-  applyZone('zone-belly', bellyLevel);
-  applyZone('zone-flanks-l', flanksLevel);
-  applyZone('zone-flanks-r', flanksLevel);
-  applyZone('zone-chest', chestLevel);
-  applyZone('zone-hips', hipsLevel);
-  applyZone('zone-thighs-l', thighsLevel);
-  applyZone('zone-thighs-r', thighsLevel);
-  applyZone('zone-arms-l', armsLevel);
-  applyZone('zone-arms-r', armsLevel);
-  applyZone('zone-face', faceLevel);
-  applyZone('zone-back', backLevel);
-
-  // Show results
-  document.getElementById('fat-pct').textContent = bodyFat.toFixed(1) + '%';
-  document.getElementById('fat-pct').style.color = catColor;
-  document.getElementById('imc-val').textContent = bmi.toFixed(1);
-  document.getElementById('fat-mass-val').textContent = fatMass.toFixed(1);
-  document.getElementById('fat-cat').textContent = category;
-  document.getElementById('fat-cat').style.color = catColor;
-
-  const barPct = Math.min(100, (bodyFat / (sex === 'male' ? 40 : 50)) * 100);
-  const bar = document.getElementById('fat-bar');
-  bar.style.width = barPct + '%';
-  bar.style.background = catColor;
-
-  // Build zone list
-  const zones = [
-    { id: 'belly', level: bellyLevel, icon: '🫁', name: 'Abdomen / Vientre', desc: descFor('belly', bellyLevel, sex) },
-    { id: 'flanks', level: flanksLevel, icon: '🔴', name: 'Costados / Flotadores', desc: descFor('flanks', flanksLevel, sex) },
-    { id: 'chest', level: chestLevel, icon: '💪', name: sex === 'male' ? 'Pecho / Ginecomastia' : 'Pecho', desc: descFor('chest', chestLevel, sex) },
-    { id: 'arms', level: armsLevel, icon: '💪', name: 'Brazos / Tríceps', desc: descFor('arms', armsLevel, sex) },
-    { id: 'hips', level: hipsLevel, icon: '🍑', name: 'Cadera / Glúteos', desc: descFor('hips', hipsLevel, sex) },
-    { id: 'thighs', level: thighsLevel, icon: '🦵', name: 'Muslos', desc: descFor('thighs', thighsLevel, sex) },
-    { id: 'back', level: backLevel, icon: '🔙', name: 'Espalda baja / Lumbares', desc: descFor('back', backLevel, sex) },
-    { id: 'face', level: faceLevel, icon: '😶', name: 'Rostro / Papada', desc: descFor('face', faceLevel, sex) },
-  ].filter(z => z.level !== 'none');
-
-  const list = document.getElementById('zone-list');
-  list.innerHTML = '';
-  zones.forEach((z, i) => {
-    const el = document.createElement('div');
-    el.className = 'zone-item';
-    el.innerHTML = `
-      <div class="zone-icon">${z.icon}</div>
-      <div class="zone-info">
-        <div class="zone-name">${z.name}</div>
-        <div class="zone-desc">${z.desc}</div>
+  document.getElementById('scoreCard').innerHTML = `
+    <div class="ring-wrap">
+      <svg viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="36" fill="none" stroke="#1a2235" stroke-width="7"/>
+        <circle cx="44" cy="44" r="36" fill="none" stroke="${sc}" stroke-width="7"
+          stroke-dasharray="${fill} ${circ}" stroke-dashoffset="${circ*0.25}"
+          stroke-linecap="round" transform="rotate(-90 44 44)"
+          style="transition:stroke-dasharray 1.2s ease"/>
+      </svg>
+      <div class="ring-inner">
+        <div class="ring-val" style="color:${sc}">${r.score}</div>
+        <div class="ring-lbl">/ 100</div>
       </div>
-      <div class="zone-badge badge-${z.level}">${z.level.toUpperCase()}</div>
-    `;
-    list.appendChild(el);
-    setTimeout(() => el.classList.add('visible'), 100 + i * 80);
+    </div>
+    <div class="score-info">
+      <h2 style="color:${sc}">${r.scoreLabel}</h2>
+      <p>${r.summary}</p>
+    </div>`;
+
+  // Map status
+  document.getElementById('mapStatus').textContent = r.score >= 70 ? 'Saludable' : r.score >= 50 ? 'Moderado' : 'Atención';
+
+  // Reset all zones
+  document.querySelectorAll('.zone,.ohlt').forEach(z => {
+    z.className = z.className.baseVal
+      ? z.className.baseVal.replace(/ z[lcmh]| on-\w+/g,'')
+      : (z.className||'').replace(/ z[lcmh]| on-\w+/g,'');
+    if (z.className.baseVal !== undefined) {
+      z.className.baseVal = z.className.baseVal.replace(/ z[lcmh]| on-\w+/g,'').trim();
+    }
+    z.style.opacity = '0';
   });
 
-  if (zones.length === 0) {
-    list.innerHTML = '<div class="zone-item visible" style="color:var(--low)">✅ Tu distribución de grasa es saludable. ¡Sigue así!</div>';
+  // Apply fat zones
+  const zMap = {
+    belly:['fz-belly','fz-fl','fz-fr'],
+    flanks:['fz-fl','fz-fr'],
+    chest:['fz-chest'],
+    arms:['fz-al','fz-ar'],
+    hips:['fz-hips'],
+    thighs:['fz-tl','fz-tr'],
+    face:['fz-face']
+  };
+  const lvlClass = {low:'zl',medium:'zm',high:'zh',critical:'zc'};
+  const clothingZone = {xxl:'zh',xl:'zm',l:'zl'};
+  const cz = clothingZone[S.clothing];
+
+  S.zones.forEach(z => {
+    if (z==='none') return;
+    (zMap[z]||[]).forEach(id => applyClass(id, cz||'zm'));
+  });
+
+  // Organ zones
+  const ozMap = {
+    liver:['oz-liver'],
+    heart:['oz-heart'],
+    lungs:['oz-lung-l','oz-lung-r'],
+    kidneys:['oz-kid-l','oz-kid-r'],
+    pancreas:['oz-pancreas'],
+    stomach:['oz-stomach'],
+    colon:['oz-colon'],
+    brain:['oz-brain'],
+    arteries:['oz-arteries']
+  };
+  const riskToOhlt = {low:'on-low',medium:'on-mid',high:'on-high',critical:'on-crit'};
+
+  (r.organs||[]).forEach(org => {
+    const cls = riskToOhlt[org.risk]||'on-mid';
+    (ozMap[org.id]||[]).forEach(id => applyClass(id, cls));
+    // also highlight related fat zones faintly
+    (org.fatZones||[]).forEach(z => {
+      (zMap[z]||[]).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.style.opacity==='0') applyClass(id, 'zl');
+      });
+    });
+  });
+
+  // Organ cards
+  const riskBadge = {low:['BAJO','rb-low'],medium:['MODERADO','rb-mid'],high:['ALTO','rb-high'],critical:['CRÍTICO','rb-crit']};
+  const list = document.getElementById('organList');
+  list.innerHTML = '';
+  (r.organs||[]).forEach((org, i) => {
+    const [bl, bc] = riskBadge[org.risk]||['MODERADO','rb-mid'];
+    const card = document.createElement('div');
+    card.className = 'ocard';
+    card.innerHTML = `
+      <div class="ocard-thumb">${org.emoji||'🫀'}</div>
+      <div class="ocard-body">
+        <div class="ocard-head">
+          <div class="ocard-name">${org.name}</div>
+          <span class="rbadge ${bc}">${bl}</span>
+        </div>
+        <div class="ocard-desc">${org.description}</div>
+        <div class="dtags">${(org.diseases||[]).map(d=>`<span class="dtag">${d}</span>`).join('')}</div>
+      </div>`;
+    list.appendChild(card);
+    setTimeout(() => card.classList.add('in'), 120 + i * 100);
+  });
+
+  if (!r.organs || r.organs.length === 0) {
+    list.innerHTML = `<div class="tip-box"><strong>✅ Sin riesgos graves detectados</strong>Tus hábitos actuales muestran un perfil de salud positivo. Sigue manteniendo buenos hábitos.</div>`;
   }
 
   // Tip
-  document.getElementById('tip-box').innerHTML = getTip(bodyFat, sex, age, waistHeightRatio);
-
-  const res = document.getElementById('results');
-  res.classList.add('visible');
-  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const tipBox = document.getElementById('tipBox');
+  if (r.tip) {
+    tipBox.style.display = 'block';
+    tipBox.innerHTML = `<strong>💡 Recomendaciones personalizadas</strong>${r.tip}`;
+  }
 }
 
-function applyZone(id, level) {
+function applyClass(id, cls) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.className = 'fat-zone';
-  if (level !== 'none') {
-    void el.offsetWidth;
-    el.classList.add(`active-${level}`);
-  }
+  el.classList.add(cls);
 }
 
-function descFor(zone, level, sex) {
-  const descs = {
-    belly: {
-      low: 'Leve acumulación abdominal. Considera reducir carbohidratos refinados.',
-      medium: 'Grasa visceral moderada. Riesgo cardiovascular incipiente.',
-      high: 'Grasa visceral elevada. Asociada a resistencia a la insulina.',
-      critical: '⚠️ Grasa visceral peligrosa. Consulta a tu médico urgentemente.',
-    },
-    flanks: {
-      low: 'Pequeños rollos laterales. Responden bien al ejercicio aeróbico.',
-      medium: 'Depósitos en costados evidentes. Reduce calorías totales.',
-      high: 'Flotadores marcados. Mejora dieta y aumenta actividad física.',
-      critical: 'Acumulación severa en flancos. Índice cintura-cadera muy elevado.',
-    },
-    chest: {
-      low: sex === 'male' ? 'Leve grasa pectoral.' : 'Normal en mujeres.',
-      medium: sex === 'male' ? 'Ginecomastia incipiente. Reduce grasa total.' : 'Grasa pectoral moderada.',
-      high: sex === 'male' ? 'Ginecomastia notable. Requiere atención.' : 'Exceso de grasa pectoral.',
-      critical: sex === 'male' ? 'Ginecomastia severa. Consulta profesional.' : 'Grasa pectoral muy elevada.',
-    },
-    arms: {
-      low: 'Leve grasa en tríceps. Ejercicios de fuerza ayudan.',
-      medium: 'Grasa en brazos moderada. Combina cardio y pesas.',
-      high: 'Brazos con exceso de grasa. Plan de entrenamiento recomendado.',
-      critical: 'Grasa muy alta en extremidades superiores.',
-    },
-    hips: {
-      low: 'Cadera ligeramente amplia. Normal en mujeres.',
-      medium: 'Grasa en cadera notable. Cardio de baja intensidad ayuda.',
-      high: 'Exceso de grasa en zona glútea y caderas.',
-      critical: 'Grasa muy alta en cadera. Dieta y ejercicio intensivo necesarios.',
-    },
-    thighs: {
-      low: 'Leve grasa en muslos. Ejercicios de piernas recomendados.',
-      medium: 'Grasa en muslos moderada. Squats y cardio son clave.',
-      high: 'Celulitis y grasa en muslos elevada. Plan específico recomendado.',
-      critical: 'Grasa muy alta en muslos. Consulta especialista.',
-    },
-    back: {
-      low: 'Leve grasa en espalda baja. Trabajar core ayuda.',
-      medium: 'Grasa lumbar moderada. Ejercicios de espalda y cardio.',
-      high: 'Exceso de grasa en zona lumbar. Cuidado postural + dieta.',
-      critical: 'Grasa muy alta en espalda. Riesgo de dolor lumbar crónico.',
-    },
-    face: {
-      low: 'Leve redondez facial. Hidratación y sueño mejoran.',
-      medium: 'Cara redonda por exceso de peso general.',
-      high: 'Papada notable. Pérdida de peso total necesaria.',
-      critical: 'Exceso de grasa facial severo. Asociado a obesidad.',
-    },
-  };
-  return descs[zone]?.[level] || '';
-}
-
-function getTip(bf, sex, age, whr) {
-  const healthy = sex === 'male' ? bf < 18 : bf < 26;
-  if (healthy && whr < 0.5) {
-    return `<strong>✅ Composición corporal saludable</strong><br>Mantén tus hábitos actuales. Prioriza ejercicio de fuerza 3x/semana y dieta rica en proteínas (1.6–2.2g/kg de peso).`;
-  } else if (bf < (sex === 'male' ? 25 : 33)) {
-    return `<strong>📋 Recomendaciones personalizadas:</strong><br>Crea un déficit calórico de 300–500 kcal/día. Prioriza proteínas (pollo, huevo, legumbres). Realiza 150 min/semana de cardio moderado + 2–3 sesiones de fuerza. Duerme 7–9 horas para regular cortisol.`;
-  } else {
-    return `<strong>⚠️ Plan de acción recomendado:</strong><br>Visita a tu médico para un perfil lipídico completo. Comienza con caminatas de 30 min diarios. Elimina azúcares añadidos y ultraprocesados. Considera apoyo nutricional profesional. Cada 1% de grasa perdida mejora tu salud significativamente.`;
-  }
+function restart() {
+  // reset state
+  S.zones=[]; S.foods=[]; S.drinks=[]; S.symptoms=[];
+  S.sex='male'; S.age=''; S.clothing=''; S.exercise='none'; S.proc='daily'; S.smoke='never';
+  // reset UI
+  document.querySelectorAll('.vopt.sel,.chip.sel').forEach(e => e.classList.remove('sel'));
+  document.querySelector('#vp-sex [data-v="male"]').classList.add('sel');
+  document.querySelector('#vp-exercise [data-v="none"]').classList.add('sel');
+  document.querySelector('#vp-proc [data-v="daily"]').classList.add('sel');
+  document.querySelector('#vp-smoke [data-v="never"]').classList.add('sel');
+  document.getElementById('sel-age').value='';
+  document.getElementById('sel-clothing').value='';
+  document.querySelectorAll('.pstep').forEach(p => p.classList.remove('done','active'));
+  document.getElementById('ps0').classList.add('active');
+  cur=0;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('p0').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 </script>
 </body>
